@@ -1,5 +1,6 @@
 package com.example.havefunapp.screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,14 +20,51 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
+import com.example.havefunapp.dao.UserDao
+import com.example.havefunapp.model.User
+import com.example.havefunapp.transport.IonMaster
+import com.example.havefunapp.transport.MainTransport
+import com.google.gson.JsonObject
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navigateToNextScreen: () -> Unit) {
+    val context = LocalContext.current
+    val mainTransport= MainTransport()
+    val TAG = "GetDataLogin"
+    mainTransport.getData(context,object : IonMaster.IonCallback {
+        override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+            var result = `object`
+            if (errorMessage != null) {
+                Log.i(TAG, "getApiMongodb Error: $errorMessage")
+            } else {
+                Log.i(TAG, "getApiMongodb Success: $result")
+                if (result != null) {
+                    result as JsonObject
+                    val document = result.getAsJsonObject("document")
+                    val user = document.getAsJsonArray("user")
+
+
+                    for (i in 0 until user.size()) {
+                        val jsonObject = user[i].asJsonObject
+
+                        toastToText(context,jsonObject.get("userName").asString+" & "+jsonObject.get("password").asString)
+
+                    }
+
+
+                }
+            }
+        }
+
+    })
+
     var expand by remember{
         mutableStateOf(false)
     }

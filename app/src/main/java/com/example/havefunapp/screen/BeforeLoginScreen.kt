@@ -4,6 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -178,17 +179,6 @@ fun signupScreen(navController: NavHostController) {
                         // Perform signup logic here
                         toastToText(context, "Signup successful")
                         navController.navigate(ScreenRoute.LoginScreen.route)
-                        mainTransport.updateUserSignUp(username,password,
-                            context,object : IonMaster.IonCallback {
-                                override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
-                                    if (errorMessage!=null){
-                                        toastToText(context,"Berhasil")
-                                    }else{
-                                        toastToText(context,"Gagal")
-                                    }
-                                }
-
-                            })
                     }
 
 
@@ -197,6 +187,11 @@ fun signupScreen(navController: NavHostController) {
             ) {
                 Text("Signup")
             }
+            Text("Sudah memiliki akun",
+                modifier = Modifier.clickable {
+                    navController.navigate(ScreenRoute.LoginScreen.route)
+                }
+            )
         }
     }
 }
