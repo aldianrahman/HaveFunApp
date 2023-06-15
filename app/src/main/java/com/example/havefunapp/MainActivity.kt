@@ -32,23 +32,24 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val db: UserDao = AppDatabase.getInstance(context)?.userDao()!!
 
-
             refeshDB(context,db)
-
 
             MaterialTheme{
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = ScreenRoute.SplashScreen.route) {
 
                     composable(ScreenRoute.SplashScreen.route) {
+                        refeshDB(context,db)
                         SplashScreen() { navController.navigate(ScreenRoute.SignupScreen.route) }
                     }
 
                     composable(ScreenRoute.SignupScreen.route){
+                        refeshDB(context,db)
                         signupScreen(context,navController,db)
                     }
 
                     composable(ScreenRoute.LoginScreen.route){
+                        refeshDB(context,db)
                         loginScreen(context,db)
                     }
 
@@ -71,9 +72,6 @@ class MainActivity : ComponentActivity() {
             val mainTransport= MainTransport()
             val TAG = "GetDataLogin"
 
-
-
-
             mainTransport.getData(context,object : IonMaster.IonCallback {
                 override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
                     var result = `object`
@@ -85,10 +83,6 @@ class MainActivity : ComponentActivity() {
                             result as JsonObject
                             val document = result.getAsJsonObject("document")
                             val user = document.getAsJsonArray("user")
-
-
-
-
 
                             for (i in 0 until user.size()) {
                                 val jsonObject = user[i].asJsonObject
@@ -102,12 +96,7 @@ class MainActivity : ComponentActivity() {
                                         password = password
                                     )
                                 )
-
-//                        toastToText(context, "$username & $password")
-
                             }
-
-
                         }
                     }
                 }

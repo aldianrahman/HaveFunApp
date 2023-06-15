@@ -2,6 +2,7 @@ package com.example.havefunapp.transport
 
 import android.content.Context
 import android.util.Log
+import com.example.havefunapp.MainActivity
 import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.db.AppDatabase
 import com.example.havefunapp.util.Util
@@ -83,7 +84,6 @@ class MainTransport : IonMaster() {
 
         sendObject.add("update", jsonElements.asJsonObject)
         Log.i("JSONUPDATE", "updateUserSignUp: $sendObject")
-
 
 
 

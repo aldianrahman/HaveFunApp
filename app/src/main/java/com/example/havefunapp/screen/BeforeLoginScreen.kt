@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import com.example.havefunapp.transport.IonMaster
 import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
+import kotlinx.coroutines.delay
 
 
 fun toastToText(
@@ -53,10 +55,6 @@ fun toastToText(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun loginScreen(context: Context, db: UserDao) {
-
-    val mainActivity = MainActivity()
-
-    mainActivity.refeshDB(context,db)
 
     var user by remember {
         mutableStateOf("")
@@ -138,10 +136,6 @@ fun loginScreen(context: Context, db: UserDao) {
 @Composable
 fun signupScreen(context: Context, navController: NavHostController, db: UserDao) {
 
-    val mainActivity = MainActivity()
-
-    mainActivity.refeshDB(context,db)
-
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -220,15 +214,16 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                         toastToText(context, "Passwords do not match")
                     } else {
 
-                        toastToText(context,"Signup successful")
-                        navController.navigate(ScreenRoute.LoginScreen.route) //error data gamasuk ke login
-
                         mainTransport.updateUserSignUp(username,password,context,object : IonMaster.IonCallback {
                             override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
 
                             }
 
                         })
+                        toastToText(context,"Signup successful")
+                        navController.navigate(ScreenRoute.LoginScreen.route) //error data gamasuk ke login
+
+
                     }
 
 

@@ -17,6 +17,8 @@ open class IonMaster {
         callback: IonCallback
     ): FutureCallback<JsonObject> {
         return FutureCallback { e, jsonObject ->
+            Log.i("JSON_UPLOAD", "getJsonFutureCallback r: $jsonObject")
+            Log.i("JSON_UPLOAD", "getJsonFutureCallback e: $e")
             if (e != null) {
                 if (e is CancellationException) {
                     callback.onReadyCallback(
