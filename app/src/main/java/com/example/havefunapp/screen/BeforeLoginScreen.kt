@@ -1,6 +1,8 @@
 package com.example.havefunapp.screen
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,14 +27,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
+import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.transport.IonMaster
 import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.primaryColor
@@ -46,12 +49,15 @@ fun toastToText(
     Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
 }
 
+@SuppressLint("PrivateResource", "ComposableNaming")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun loginScreen(
+fun loginScreen(context: Context, db: UserDao) {
 
-){
-    val context = LocalContext.current
+    val mainActivity = MainActivity()
+
+    mainActivity.refeshDB(context,db)
+
     var user by remember {
         mutableStateOf("")
     }
@@ -61,6 +67,8 @@ fun loginScreen(
     var passwordVisibility by remember {
         mutableStateOf(false)
     }
+
+
 
     Box(
         modifier = Modifier
@@ -95,7 +103,8 @@ fun loginScreen(
                         onClick = { passwordVisibility = !passwordVisibility }
                     ) {
                         Icon(
-                            painter = if (passwordVisibility) painterResource(R.drawable.eye_closed_icon) else painterResource(R.drawable.eye_open_icon),
+                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
+                                com.google.android.material.R.drawable.design_ic_visibility),
                             contentDescription = "Toggle Password Visibility"
                         )
                     }
@@ -103,12 +112,18 @@ fun loginScreen(
             )
             Button(
                 onClick = {
+
+                    val checkLogin = db.getUserByUsernameAndPassword(user,password)
+                    Log.i("DB_LOGIN", "loginScreen: $checkLogin")
+
                     if(user == ""){
                         toastToText(context,"Masukan User Anda")
                     }else if (password == ""){
                         toastToText(context, "Masukan Password Anda")
-                    }else{
+                    }else if(checkLogin) {
                         toastToText(context,"Login Berhasil")
+                    }else{
+                        toastToText(context,"Login Gagal")
                     }
 
                 }
@@ -121,13 +136,19 @@ fun loginScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun signupScreen(navController: NavHostController) {
-    val context = LocalContext.current
+fun signupScreen(context: Context, navController: NavHostController, db: UserDao) {
+
+    val mainActivity = MainActivity()
+
+    mainActivity.refeshDB(context,db)
+
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var mainTransport = MainTransport()
-
+    var passwordVisibility by remember {
+        mutableStateOf(false)
+    }
+    val mainTransport = MainTransport()
     Box(
         modifier = Modifier
             .background(primaryColor)
@@ -154,16 +175,38 @@ fun signupScreen(navController: NavHostController) {
                 onValueChange = { newPassword -> password = newPassword },
                 placeholder = { Text("Enter your password") },
                 modifier = Modifier.fillMaxWidth().padding(15.dp),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { passwordVisibility = !passwordVisibility }
+                    ) {
+                        Icon(
+                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
+                                com.google.android.material.R.drawable.design_ic_visibility),
+                            contentDescription = "Toggle Password Visibility"
+                        )
+                    }
+                }
             )
             TextField(
                 value = confirmPassword,
-                onValueChange = { newConfirmPassword -> confirmPassword = newConfirmPassword },
-                placeholder = { Text("Confirm your password") },
+                onValueChange = { newPassword -> confirmPassword = newPassword },
+                placeholder = { Text("Enter your password") },
                 modifier = Modifier.fillMaxWidth().padding(15.dp),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { passwordVisibility = !passwordVisibility }
+                    ) {
+                        Icon(
+                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
+                                com.google.android.material.R.drawable.design_ic_visibility),
+                            contentDescription = "Toggle Password Visibility"
+                        )
+                    }
+                }
             )
             Button(
                 onClick = {
@@ -176,9 +219,16 @@ fun signupScreen(navController: NavHostController) {
                     } else if (password != confirmPassword) {
                         toastToText(context, "Passwords do not match")
                     } else {
-                        // Perform signup logic here
-                        toastToText(context, "Signup successful")
-                        navController.navigate(ScreenRoute.LoginScreen.route)
+
+                        toastToText(context,"Signup successful")
+                        navController.navigate(ScreenRoute.LoginScreen.route) //error data gamasuk ke login
+
+                        mainTransport.updateUserSignUp(username,password,context,object : IonMaster.IonCallback {
+                            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+
+                            }
+
+                        })
                     }
 
 
