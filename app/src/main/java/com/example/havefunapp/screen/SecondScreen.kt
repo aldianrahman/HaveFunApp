@@ -17,6 +17,7 @@ fun SecondScreen(index: String?) {
         .fillMaxSize()){
         if (index != null) {
             BottomMenu(
+                editor = null,
                 items = listOf(
                     BottomMenuContent("Home", R.drawable.ic_home),
                     BottomMenuContent("Meditate", R.drawable.ic_bubble),

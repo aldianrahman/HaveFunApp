@@ -11,6 +11,9 @@ import com.example.havefunapp.entity.Users
 @Dao
 interface UserDao {
 
+    @Query("SELECT idUSer FROM users WHERE email = :email")
+    fun getUserIdByEmail(email: String): String
+
     @Query("INSERT OR REPLACE INTO Users (idUser, userName, password,email) VALUES (:idUser, :userName, :password, :email)")
     fun insertOrReplaceUser(idUser:String,userName:String,password: String,email: String)
 

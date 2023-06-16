@@ -2,6 +2,7 @@ package com.example.havefunapp.screen
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,11 +10,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +46,12 @@ import com.example.havefunapp.util.Util
 @SuppressLint("PrivateResource", "ComposableNaming")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun loginScreen(context: Context, db: UserDao, navController: NavHostController) {
+fun loginScreen(
+    context: Context,
+    editor: SharedPreferences.Editor,
+    db: UserDao,
+    navController: NavHostController
+) {
 
     var email by remember {
         mutableStateOf("")
@@ -61,6 +69,7 @@ fun loginScreen(context: Context, db: UserDao, navController: NavHostController)
             "Tekan tombol 'Back' sekali lagi untuk menutup aplikasi"
         )
     }
+    var rememberMe by remember { mutableStateOf(false) }
 
 
 
@@ -108,6 +117,17 @@ fun loginScreen(context: Context, db: UserDao, navController: NavHostController)
                     }
                 }
             )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = rememberMe,
+                    onCheckedChange = { rememberMe = it },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Ingat Saya")
+            }
             Button(
                 onClick = {
 
@@ -119,6 +139,11 @@ fun loginScreen(context: Context, db: UserDao, navController: NavHostController)
                     }else if (password == ""){
                         Util.toastToText(context, "Masukan Password Anda")
                     }else if(checkLogin) {
+
+                        editor.putBoolean(Util.RememberME,rememberMe)
+                        editor.apply()
+
+
                         Util.toastToText(context,"Login Berhasil")
                         navController.navigate(ScreenRoute.HomeScreen.route)
                     }else{

@@ -42,6 +42,7 @@ import com.example.havefunapp.ui.theme.DeepBlue
 import com.example.havefunapp.ui.theme.LightRed
 import com.example.havefunapp.ui.theme.MeditationUIYouTubeTheme
 import com.example.havefunapp.ui.theme.TextWhite
+import com.example.havefunapp.util.Util
 import com.google.gson.JsonObject
 import java.util.Calendar
 
@@ -49,9 +50,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
+            val sharedPreferences = getSharedPreferences(Util.NamePref, Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            val isLogin = sharedPreferences.getBoolean(Util.RememberME,false)
+
+
+
+
+
             MeditationUIYouTubeTheme{
 
                 val context = LocalContext.current
+
+
                 val TAG: String = "JSON_MONGODB"
                 var mainTransport = MainTransport()
                 var names = ""
@@ -150,9 +162,20 @@ class MainActivity : ComponentActivity() {
                 val salam = "Good $inDay, $name"
                 val harapan = wish
 
+                var toGo = ""
+
+                if (isLogin){
+                    toGo = ScreenRoute.HomeScreen.route
+                }else{
+                    toGo = ScreenRoute.SplashScreen.route
+                }
+
 
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = ScreenRoute.SplashScreen.route) {
+
+                NavHost(navController = navController, startDestination = toGo) {
+
+
 
                     composable(ScreenRoute.SplashScreen.route) {
                         refeshDB(context,db)
@@ -166,12 +189,12 @@ class MainActivity : ComponentActivity() {
 
                     composable(ScreenRoute.LoginScreen.route){
                         refeshDB(context,db)
-                        loginScreen(context,db,navController)
+                        loginScreen(context,editor,db,navController)
                     }
 
                     composable(ScreenRoute.HomeScreen.route){
                         refeshDB(context,db)
-                        HomeScreen(context,salam,harapan,
+                        HomeScreen(context,editor,salam,harapan,
                             "$dayOfWeekString, $date "+monthNames[month]+" $year",
                             names,
                             email,
@@ -192,6 +215,8 @@ class MainActivity : ComponentActivity() {
                     ){entry->
                         SecondScreen(entry.arguments?.getString("index"))
                     }
+
+
 
 
 

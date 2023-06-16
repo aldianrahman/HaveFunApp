@@ -1,6 +1,8 @@
 package com.example.havefunapp.screen
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.content.SharedPreferences.Editor
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -79,6 +81,7 @@ import com.example.havefunapp.util.standardQuadFromTo
 @Composable
 fun HomeScreen(
     context: Context,
+    editor: SharedPreferences.Editor,
     salam: String,
     harapan: String,
     date: String,
@@ -154,13 +157,15 @@ fun HomeScreen(
             )
         }
         BottomMenu(
+            editor = editor,
             items = listOf(
                 BottomMenuContent("Home", R.drawable.ic_home),
                 BottomMenuContent("Meditate", R.drawable.ic_bubble),
                 BottomMenuContent("Sleep", R.drawable.ic_moon),
                 BottomMenuContent("Music", R.drawable.ic_music),
-                BottomMenuContent("Profile", R.drawable.ic_profile),
-            ), modifier = Modifier.align(Alignment.BottomCenter)
+                BottomMenuContent("Logout", R.drawable.ic_profile),
+            ),
+            modifier = Modifier.align(Alignment.BottomCenter)
             , navController = navController
         )
     }
@@ -168,6 +173,7 @@ fun HomeScreen(
 
 @Composable
 fun BottomMenu(
+    editor: Editor?,
     items: List<BottomMenuContent>,
     modifier: Modifier = Modifier,
     activeHighlightColor: Color = ButtonBlue,
@@ -200,6 +206,12 @@ fun BottomMenu(
                     navController?.navigate(ScreenRoute.HomeScreen.route)
                 }else if (selectedItemIndex == 1){
                     navController?.navigate(ScreenRoute.SecondScreen.withArgs(selectedItemIndex.toString()))
+                }else if(selectedItemIndex == 4){
+
+                    editor?.clear()
+                    editor?.apply()
+                    navController?.navigate(ScreenRoute.SplashScreen.route)
+
                 }
             }
         }

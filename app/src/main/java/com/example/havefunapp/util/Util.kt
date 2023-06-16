@@ -7,6 +7,11 @@ import android.widget.Toast
 class Util {
 
     companion object {
+        val NamePref: String? = "pref"
+        val RememberME: String? = "remember_me"
+        val emailUser: String? = "email_user"
+        val idlUser: String? = "id_user"
+
         fun isNetworkAvailable(context: Context): Boolean {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
