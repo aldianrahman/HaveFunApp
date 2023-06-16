@@ -120,6 +120,7 @@ fun loginScreen(context: Context, db: UserDao, navController: NavHostController)
                         Util.toastToText(context, "Masukan Password Anda")
                     }else if(checkLogin) {
                         Util.toastToText(context,"Login Berhasil")
+                        navController.navigate(ScreenRoute.HomeScreen.route)
                     }else{
                         Util.toastToText(context,"Login Gagal")
                     }

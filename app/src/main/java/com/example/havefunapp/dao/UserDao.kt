@@ -26,6 +26,8 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE email = :email")
     fun getUserByEmail(email: String): Boolean
 
+
+
     @Update
     fun updateUser(users: Users)
 

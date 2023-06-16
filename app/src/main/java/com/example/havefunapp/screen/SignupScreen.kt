@@ -37,7 +37,6 @@ import com.example.havefunapp.R
 import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.transport.IonMaster
 import com.example.havefunapp.transport.MainTransport
-import com.example.havefunapp.ui.theme.DeepBlue
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
