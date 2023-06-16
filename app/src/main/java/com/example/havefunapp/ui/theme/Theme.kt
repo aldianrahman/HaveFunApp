@@ -16,15 +16,15 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = DeepBlue,
+    secondary = DeepBlue,
+    tertiary = DeepBlue
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = DeepBlue,
+    secondary = DeepBlue,
+    tertiary = DeepBlue
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -36,6 +36,29 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+@Composable
+fun HaveFunAppTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            primary = ButtonBlue,
+            primaryContainer = DarkerButtonBlue,
+            onPrimary = TextWhite
+            // tambahkan pengaturan warna lainnya sesuai kebutuhan
+        )
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun MeditationUIYouTubeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
+    MaterialTheme(
+        typography = Typography,
+        shapes = Shapes,
+        content = content
+    )
+}
 
 @Composable
 fun HaveFunAppTheme(

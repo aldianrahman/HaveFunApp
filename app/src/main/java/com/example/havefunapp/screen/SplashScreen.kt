@@ -1,6 +1,6 @@
 package com.example.havefunapp.screen
 
-import android.util.Log
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,25 +20,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
-import com.example.havefunapp.dao.UserDao
-import com.example.havefunapp.entity.Users
 
-import com.example.havefunapp.transport.IonMaster
-import com.example.havefunapp.transport.MainTransport
-import com.google.gson.JsonObject
+import com.example.havefunapp.util.Util
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen( navigateToNextScreen: () -> Unit) {
+fun SplashScreen(context: Context, navigateToNextScreen: () -> Unit) {
 
     var expand by remember{
         mutableStateOf(false)
     }
+
+    val onBack = {
+        Util.toastToText(
+            context,
+            "Tekan tombol 'Back' sekali lagi untuk menutup aplikasi"
+        )
+    }
+
+    val mainActivity = MainActivity()
+
+    mainActivity.BackPressHandler(onBackPressed = onBack)
+
+
 
     LaunchedEffect(key1 = true) {
         delay(1500)

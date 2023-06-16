@@ -11,8 +11,8 @@ import com.example.havefunapp.entity.Users
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrReplaceUser(users: Users)
+    @Query("INSERT OR REPLACE INTO Users (idUser, userName, password,email) VALUES (:idUser, :userName, :password, :email)")
+    fun insertOrReplaceUser(idUser:String,userName:String,password: String,email: String)
 
     @Query("Select * from users")
     fun gelAllUsers(): List<Users>
@@ -20,8 +20,11 @@ interface UserDao {
     @Query("SELECT COUNT(*) FROM users")
     fun countAllUsers(): Int
 
-    @Query("SELECT * FROM users WHERE username = :username AND password = :password")
-    fun getUserByUsernameAndPassword(username: String, password: String): Boolean
+    @Query("SELECT * FROM users WHERE email = :email AND password = :password")
+    fun getUserByUsernameAndPassword(email: String, password: String): Boolean
+
+    @Query("SELECT * FROM users WHERE email = :email")
+    fun getUserByEmail(email: String): Boolean
 
     @Update
     fun updateUser(users: Users)

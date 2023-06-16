@@ -40,6 +40,7 @@ class MainTransport : IonMaster() {
     fun updateUserSignUp(
         username: String,
         password: String,
+        email:String,
         context: Context?,
         callback: IonCallback?
     ): java.util.concurrent.Future<JsonObject>? {
@@ -72,7 +73,7 @@ class MainTransport : IonMaster() {
 
         // Buat JSON string
         val jsonString =
-            "{ \"\$push\": { \"user\": { \"userId\": \"$lastIndex\", \"userName\": \"$username\",\"password\":\"$password\" } } }"
+            "{ \"\$push\": { \"user\": { \"userId\": \"$lastIndex\", \"userName\": \"$username\",\"password\":\"$password\",\"email\":\"$email\" } } }"
 
         // Buat JsonElement menggunakan JsonParser
         val jsonParsers = JsonParser()
@@ -84,10 +85,8 @@ class MainTransport : IonMaster() {
 
         sendObject.add("update", jsonElements.asJsonObject)
         Log.i("JSONUPDATE", "updateUserSignUp: $sendObject")
-
-
-
-        return Ion.with(context)
+        val returnObj: Future<JsonObject> =
+            Ion.with(context)
             .load(Util.getBaseUrl("updateOne"))
             .setLogging("IONLOG", Log.DEBUG)
             .setHeader("Content-Type", "application/json")
@@ -95,6 +94,9 @@ class MainTransport : IonMaster() {
             .setHeader("api-key", "6438f8553f4da8ec3781253b")
             .setJsonObjectBody(sendObject)
             .asJsonObject()
+
+        returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
+        return returnObj
     }
 
 

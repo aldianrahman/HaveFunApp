@@ -2,6 +2,7 @@ package com.example.havefunapp.util
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.widget.Toast
 
 class Util {
 
@@ -38,6 +39,10 @@ class Util {
 //            } else {
 //                "https://raksa-service.com/raksa.claim/index.php/api/service/mobileService"
 //            }
+        }
+
+        fun toastToText(context: Context, s: String) {
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
         }
     }
 

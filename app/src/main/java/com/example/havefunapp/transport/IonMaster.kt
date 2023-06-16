@@ -48,7 +48,23 @@ open class IonMaster {
                     }else {
                         callback.onReadyCallback("Error ","Error")
                     }
-                }else {
+                }else if (jsonObject["matchedCount"] != null) {
+                    if (jsonObject["matchedCount"] is JsonObject ||
+                        jsonObject["matchedCount"] is JsonArray ||
+                        jsonObject["matchedCount"] is JsonPrimitive)
+                    {
+                        if (jsonObject["matchedCount"].toString()=="1"){
+                            callback.onReadyCallback(null,"Sukses")
+                        }else{
+                            callback.onReadyCallback("Gagal",null)
+                        }
+
+                    }else {
+                        callback.onReadyCallback("Error ","Error")
+                    }
+                }
+
+                else{
                     callback.onReadyCallback(
                         context.getString(R.string.error_when_processing_your_data),
                         null

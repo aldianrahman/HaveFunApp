@@ -11,7 +11,11 @@ data class Users(
     @PrimaryKey(
         autoGenerate = true
     )
-    var userId: Int? = null,
+    val userId: Int? = null,
     val userName: String,
-    var password: String
+    val password: String,
+    val idUSer:String,
+    val email:String
 )
+
+
