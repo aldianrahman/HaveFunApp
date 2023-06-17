@@ -62,6 +62,16 @@ open class IonMaster {
                     }else {
                         callback.onReadyCallback("Error ","Error")
                     }
+                }else if (jsonObject["results"] != null) {
+                    if (jsonObject["results"] is JsonObject ||
+                        jsonObject["results"] is JsonArray ||
+                        jsonObject["results"] is JsonPrimitive)
+                    {
+                        callback.onReadyCallback(errorMessage = null,jsonObject)
+
+                    }else {
+                        callback.onReadyCallback("Error ","Error")
+                    }
                 }
 
                 else{

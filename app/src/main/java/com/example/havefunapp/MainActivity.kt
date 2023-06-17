@@ -1,6 +1,7 @@
 package com.example.havefunapp
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.db.AppDatabase
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.havefunapp.screen.HomeScreen
@@ -45,9 +48,15 @@ import com.example.havefunapp.ui.theme.MeditationUIYouTubeTheme
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.Util
 import com.google.gson.JsonObject
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -66,22 +75,47 @@ class MainActivity : ComponentActivity() {
 
 
                 val TAG: String = "JSON_MONGODB"
-                var mainTransport = MainTransport()
-
+                val mainTransport = MainTransport()
                 val stringButton = mutableListOf<String>()
                 val stringFeature = mutableListOf<String>()
 
-                stringButton.add("Button 1")
-                stringButton.add("Button 2")
-                stringButton.add("Button 3")
+                 mainTransport.getDataFilm(context,object : IonMaster.IonCallback {
+                    override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+                        Log.i(TAG, "onReadyCallback E : $errorMessage")
+                        Log.i(TAG, "onReadyCallback R : $`object`")
+
+                        val result = `object` as JsonObject
+
+                        val array = result.asJsonObject.get("results").asJsonArray
+
+
+
+                        for (i in 0 until array.size()) {
+                            val element = array.get(i).asJsonObject.get("original_title").asString
+                            stringFeature.add(element)
+                        }
+
+
+
+
+//                        stringFeature.add("Feature 2")
+//                        stringFeature.add("Feature 3")
+//                        stringFeature.add("Feature 4")
+//                        stringFeature.add("Feature 5")
+//                        stringFeature.add("Feature 6")
+
+                    }
+
+                })
+
+
+
+                stringButton.add("Top Film")
+                stringButton.add("Top Music")
+                stringButton.add("Top News")
 
                 // Populate stringFeature list
-                stringFeature.add("Feature 1")
-                stringFeature.add("Feature 2")
-                stringFeature.add("Feature 3")
-                stringFeature.add("Feature 4")
-                stringFeature.add("Feature 5")
-                stringFeature.add("Feature 6")
+
 
 
 
@@ -162,10 +196,10 @@ class MainActivity : ComponentActivity() {
 
                 var toGo = ""
 
-                if (isLogin){
-                    toGo = ScreenRoute.HomeScreen.route
+                toGo = if (isLogin){
+                    ScreenRoute.HomeScreen.route
                 }else{
-                    toGo = ScreenRoute.SplashScreen.route
+                    ScreenRoute.SplashScreen.route
                 }
 
 
@@ -192,16 +226,26 @@ class MainActivity : ComponentActivity() {
 
                     composable(ScreenRoute.HomeScreen.route){
                         val names = sharedPreferences.getString(Util.nameUser,"")
+                        val defaultZoneId: ZoneId = ZoneId.systemDefault()
+
+                        // Mendapatkan waktu lokal saat ini berdasarkan zona waktu default
+                        val currentDateTime: LocalDateTime = LocalDateTime.now(defaultZoneId)
+
+                        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+                        val fullHour: String = currentDateTime.format(formatter)
+
+                        // Mendapatkan timestamp dari waktu lokal
+                        val lastLogin = "Terakhir Login : $fullHour di $defaultZoneId"
                         val email = sharedPreferences.getString(Util.emailUser,"")
                         val idUser = sharedPreferences.getString(Util.idlUser,"")
-                        val salam = "Good $inDay,   $idUser"
+                        val salam = "Good $inDay, $names"
                         val harapan = wish
                         refeshDB(context,db)
                         if (names != null) {
                             if (email != null) {
                                 HomeScreen(context,editor,salam,harapan,
                                     "$dayOfWeekString, $date "+monthNames[month]+" $year",
-                                    names,
+                                    lastLogin,
                                     email,
                                     stringButton,
                                     stringFeature,
@@ -320,10 +364,10 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun defaultTextFieldColor(): TextFieldColors {
         return TextFieldDefaults.textFieldColors(
-            containerColor = TextWhite, // Ubah warna latar belakang
-            cursorColor = DeepBlue, // Ubah warna kursor
+            containerColor = Color.Transparent, // Ubah warna latar belakang
+            cursorColor = TextWhite, // Ubah warna kursor
             textColor = DeepBlue, // Ubah warna teks
-            focusedIndicatorColor = LightRed, // Ubah warna indikator saat fokus
+            focusedIndicatorColor = TextWhite, // Ubah warna indikator saat fokus
             unfocusedIndicatorColor = DeepBlue // Ubah warna indikator saat tidak fokus
         )
     }

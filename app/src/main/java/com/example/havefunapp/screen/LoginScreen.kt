@@ -33,9 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.havefunapp.MainActivity
@@ -98,17 +101,17 @@ fun loginScreen(
             )
 
             Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
-            OutlinedTextField(
+            CoolTextField(
                 value = email,
                 onValueChange = { newUser -> email = newUser },
-                placeholder = { Text("Enter your Email") },
+                placeholder = "Your Email",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
-            OutlinedTextField(
+            CoolTextField(
                 value = password,
                 onValueChange = { newPassword -> password = newPassword },
-                placeholder = { Text("Enter your password") },
+                placeholder = "Your password",
                 modifier = paddingDown,
                 colors = mainActivity.defaultTextFieldColor(),
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
@@ -150,7 +153,7 @@ fun loginScreen(
                         Util.toastToText(context, "Masukan Password Anda")
                     }else if(checkLogin) {
 
-                        editor.putBoolean(Util.RememberME,rememberMe)
+                        editor.putBoolean(Util.RememberME,false) // di benerin getFilm nya baru sesuaikan lagi false nya
                         editor.putString(Util.idlUser,db.getUserIdByEmail(email))
                         editor.putString(Util.emailUser,email)
                         editor.putString(Util.nameUser,db.getUsernameByEmail(email))
@@ -169,14 +172,18 @@ fun loginScreen(
                     }
 
                 },
+                Modifier.padding(16.dp),
                 colors = mainActivity.defaultButtonColor()
             ){
                 Text("Login",color = TextWhite)
             }
             Text("Buat akun baru mu sekarang!",
+                textDecoration = TextDecoration.Underline,
                 modifier = Modifier.clickable {
                     navController.navigate(ScreenRoute.SignupScreen.route)
-                }
+                },
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
             )
         }
     }

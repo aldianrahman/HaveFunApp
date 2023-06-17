@@ -51,6 +51,11 @@ class Util {
         fun toastToText(context: Context, s: String) {
             Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
         }
+
+        fun getFilm(): String {
+
+            return "https://api.themoviedb.org/3"+"/movie/popular?api_key=8af32cafa0a61c0821df743b90b4d56e"
+        }
     }
 
 }

@@ -3,7 +3,6 @@ package com.example.havefunapp.screen
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
-import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -81,14 +80,14 @@ import com.example.havefunapp.util.standardQuadFromTo
 @Composable
 fun HomeScreen(
     context: Context,
-    editor: SharedPreferences.Editor,
+    editor: Editor,
     salam: String,
     harapan: String,
     date: String,
     data: String,
     email: String,
     stringButton: List<String>,
-    stringFeature: MutableList<String>,
+    stringFeature: List<String>,
     navController: NavHostController
 ){
     val onBack = {
@@ -131,7 +130,7 @@ fun HomeScreen(
                         OrangeYellow2,
                         OrangeYellow1,
 
-                        ),
+                    ),
                     Feature(
                         title = stringFeature[3],
                         R.drawable.ic_headphone,
@@ -152,7 +151,35 @@ fun HomeScreen(
                         Blue1,
                         Blue2,
                         Blue3
-                    )
+                    ),Feature(
+                        title = stringFeature[6],
+                        R.drawable.ic_headphone,
+                        BlueViolet1,
+                        BlueViolet2,
+                        BlueViolet3
+                    ),
+                    Feature(
+                        title = stringFeature[7],
+                        R.drawable.ic_videocam,
+                        LightGreen1,
+                        LightGreen2,
+                        LightGreen3
+                    ),
+                    Feature(
+                        title = stringFeature[8],
+                        R.drawable.ic_headphone,
+                        OrangeYellow3,
+                        OrangeYellow2,
+                        OrangeYellow1,
+
+                        ),
+                    Feature(
+                        title = stringFeature[9],
+                        R.drawable.ic_headphone,
+                        Beige1,
+                        Beige2,
+                        Beige3
+                    ),
                 )
             )
         }
@@ -314,7 +341,7 @@ fun ChipSection(
                     .padding(start = 15.dp, top = 15.dp, bottom = 15.dp)
                     .clickable {
                         selectedChipIndex = it
-                        Toast.makeText(context, ""+chips[selectedChipIndex], Toast.LENGTH_SHORT).show()
+                        Util.toastToText(context,""+chips[selectedChipIndex])
                     }
                     .clip(RoundedCornerShape(10.dp))
                     .background(
@@ -464,7 +491,7 @@ fun CurrentMeditation(
             modifier = Modifier
                 .size(16.dp)
                 .clickable {
-                    Toast.makeText(contex, "Music Play", Toast.LENGTH_SHORT).show()
+                    Util.toastToText(contex,"Music Play")
                 }
         )
     }
@@ -588,7 +615,7 @@ fun FratureItem(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clickable {
-                        Toast.makeText(contex, ""+feature.title, Toast.LENGTH_SHORT).show()
+                        Util.toastToText(contex,""+feature.title)
                     }
                     .align(Alignment.BottomEnd)
                     .clip(RoundedCornerShape(10.dp))

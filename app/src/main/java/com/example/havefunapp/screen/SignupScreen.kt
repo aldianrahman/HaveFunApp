@@ -2,6 +2,7 @@ package com.example.havefunapp.screen
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.style.UnderlineSpan
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,9 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.havefunapp.MainActivity
@@ -87,24 +90,26 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
             Image(
                 painter = painterResource( R.drawable.ic_launcher_background), // Ubah "logo.png" dengan path ke file logo Anda
                 contentDescription = "Logo",
-                modifier = Modifier.size(100.dp).padding(bottom = 16.dp)
+                modifier = Modifier
+                    .size(100.dp)
+                    .padding(bottom = 16.dp)
             )
 
             Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
-            OutlinedTextField(
+            CoolTextField(
                 value = username,
                 onValueChange = { newUsername -> username = newUsername },
-                placeholder = { Text("Enter your Name") },
+                placeholder = "Your Name",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
-            OutlinedTextField(
+            CoolTextField(
                 value = email,
                 onValueChange = { newEmail -> email = newEmail
                     showError = !isEmailValid(newEmail)
-                                },
+                },
                 isError = showError,
-                placeholder = { Text("Enter your email") },
+                placeholder = "Your Email",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor(),
                 trailingIcon = {
@@ -119,7 +124,7 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                 }
 
             )
-            OutlinedTextField(
+            CoolTextField(
                 value = password,
                 onValueChange = { newPassword ->
                     password = newPassword
@@ -138,7 +143,7 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                         }
                     }
                 },
-                placeholder = { Text("Enter your password") },
+                placeholder = "Your password",
                 modifier = paddingUp,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -168,10 +173,10 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                 }
             }
 
-            OutlinedTextField(
+            CoolTextField(
                 value = confirmPassword,
                 onValueChange = { newPassword -> confirmPassword = newPassword },
-                placeholder = { Text("Renter your password") },
+                placeholder ="Renter your password",
                 modifier = paddingDown,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -241,6 +246,7 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
 
 
                 },
+                modifier = Modifier.padding(16.dp),
                 colors = mainActivity.defaultButtonColor()
             ) {
                 Text("Register",color = TextWhite)
@@ -248,7 +254,10 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
             Text("Sudah memiliki akun",
                 modifier = Modifier.clickable {
                     navController.navigate(ScreenRoute.LoginScreen.route)
-                }
+                },
+                textDecoration = TextDecoration.Underline,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
             )
         }
     }

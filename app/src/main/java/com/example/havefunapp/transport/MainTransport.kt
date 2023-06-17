@@ -17,6 +17,21 @@ import com.koushikdutta.ion.Ion
 class MainTransport : IonMaster() {
     private val sendObject = JsonObject()
 
+    fun getDataFilm(context: Context?, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
+
+
+        sendObject.addProperty("dataSource", "Cluster0")
+        sendObject.addProperty("database", "todo")
+        sendObject.addProperty("collection", "have_fun")
+
+        val returnObj: Future<JsonObject> = Ion.with(context)
+            .load(Util.getFilm())
+            .setLogging("IONLOG", Log.DEBUG)
+            .asJsonObject()
+        returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
+        return returnObj
+    }
+
 
         fun getData(context: Context?, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
 
