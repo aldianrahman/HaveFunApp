@@ -33,6 +33,7 @@ import com.example.havefunapp.screen.SecondScreen
 
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.screen.SplashScreen
+import com.example.havefunapp.screen.isEmailValid
 import com.example.havefunapp.screen.loginScreen
 import com.example.havefunapp.screen.signupScreen
 import com.example.havefunapp.transport.IonMaster
@@ -66,8 +67,7 @@ class MainActivity : ComponentActivity() {
 
                 val TAG: String = "JSON_MONGODB"
                 var mainTransport = MainTransport()
-                var names = ""
-                var email = ""
+
                 val stringButton = mutableListOf<String>()
                 val stringFeature = mutableListOf<String>()
 
@@ -158,9 +158,7 @@ class MainActivity : ComponentActivity() {
                     else -> "It's time for a break, relax yourself!"
                 }
 
-                val name = "Aldian Rahman"
-                val salam = "Good $inDay, $name"
-                val harapan = wish
+
 
                 var toGo = ""
 
@@ -193,14 +191,23 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(ScreenRoute.HomeScreen.route){
+                        val names = sharedPreferences.getString(Util.nameUser,"")
+                        val email = sharedPreferences.getString(Util.emailUser,"")
+                        val idUser = sharedPreferences.getString(Util.idlUser,"")
+                        val salam = "Good $inDay,   $idUser"
+                        val harapan = wish
                         refeshDB(context,db)
-                        HomeScreen(context,editor,salam,harapan,
-                            "$dayOfWeekString, $date "+monthNames[month]+" $year",
-                            names,
-                            email,
-                            stringButton,
-                            stringFeature,
-                            navController)
+                        if (names != null) {
+                            if (email != null) {
+                                HomeScreen(context,editor,salam,harapan,
+                                    "$dayOfWeekString, $date "+monthNames[month]+" $year",
+                                    names,
+                                    email,
+                                    stringButton,
+                                    stringFeature,
+                                    navController)
+                            }
+                        }
                     }
 
                     composable(

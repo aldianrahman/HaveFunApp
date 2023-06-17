@@ -2,8 +2,6 @@ package com.example.havefunapp.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.havefunapp.entity.Users
@@ -13,6 +11,9 @@ interface UserDao {
 
     @Query("SELECT idUSer FROM users WHERE email = :email")
     fun getUserIdByEmail(email: String): String
+
+    @Query("SELECT userName FROM users WHERE email = :email")
+    fun getUsernameByEmail(email: String): String
 
     @Query("INSERT OR REPLACE INTO Users (idUser, userName, password,email) VALUES (:idUser, :userName, :password, :email)")
     fun insertOrReplaceUser(idUser:String,userName:String,password: String,email: String)

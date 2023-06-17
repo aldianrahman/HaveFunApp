@@ -208,6 +208,8 @@ fun BottomMenu(
                     navController?.navigate(ScreenRoute.SecondScreen.withArgs(selectedItemIndex.toString()))
                 }else if(selectedItemIndex == 4){
 
+
+
                     editor?.clear()
                     editor?.apply()
                     navController?.navigate(ScreenRoute.SplashScreen.route)

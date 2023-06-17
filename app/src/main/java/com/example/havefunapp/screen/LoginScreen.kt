@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -53,6 +56,9 @@ fun loginScreen(
     navController: NavHostController
 ) {
 
+    val paddingUp: Modifier = Modifier.padding(bottom = 8.dp)
+    val paddingDown: Modifier = Modifier.padding(bottom = 16.dp)
+
     var email by remember {
         mutableStateOf("")
     }
@@ -85,23 +91,25 @@ fun loginScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Please Login")
             Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = null
+                painter = painterResource( R.drawable.ic_launcher_background), // Ubah "logo.png" dengan path ke file logo Anda
+                contentDescription = "Logo",
+                modifier = Modifier.size(100.dp).padding(bottom = 16.dp)
             )
-            TextField(
+
+            Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
+            OutlinedTextField(
                 value = email,
                 onValueChange = { newUser -> email = newUser },
                 placeholder = { Text("Enter your Email") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
-            TextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = { newPassword -> password = newPassword },
                 placeholder = { Text("Enter your password") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingDown,
                 colors = mainActivity.defaultTextFieldColor(),
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -131,7 +139,9 @@ fun loginScreen(
             Button(
                 onClick = {
 
-                    val checkLogin = db.getUserByUsernameAndPassword(email,password)
+                    val encryptedPassword = encryptMD5(password)
+
+                    val checkLogin = db.getUserByUsernameAndPassword(email,encryptedPassword)
                     Log.i("DB_LOGIN", "loginScreen: $checkLogin")
 
                     if(email == ""){
@@ -141,11 +151,19 @@ fun loginScreen(
                     }else if(checkLogin) {
 
                         editor.putBoolean(Util.RememberME,rememberMe)
+                        editor.putString(Util.idlUser,db.getUserIdByEmail(email))
+                        editor.putString(Util.emailUser,email)
+                        editor.putString(Util.nameUser,db.getUsernameByEmail(email))
                         editor.apply()
+                        val result = editor.commit()
 
 
-                        Util.toastToText(context,"Login Berhasil")
-                        navController.navigate(ScreenRoute.HomeScreen.route)
+                        if (result) {
+                            Util.toastToText(context,"Login Berhasil")
+                            navController.navigate(ScreenRoute.HomeScreen.route)
+                        } else {
+                            Util.toastToText(context, "Gagal menerapkan perubahan")
+                        }
                     }else{
                         Util.toastToText(context,"Login Gagal")
                     }

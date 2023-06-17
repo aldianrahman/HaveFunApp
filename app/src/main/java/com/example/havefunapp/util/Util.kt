@@ -8,8 +8,10 @@ class Util {
 
     companion object {
         val NamePref: String? = "pref"
+        const val appName: String = "MyApp"
         val RememberME: String? = "remember_me"
         val emailUser: String? = "email_user"
+        val nameUser: String? = "name_user"
         val idlUser: String? = "id_user"
 
         fun isNetworkAvailable(context: Context): Boolean {

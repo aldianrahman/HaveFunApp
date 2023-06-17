@@ -11,13 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,13 +42,21 @@ import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
+import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.Util.Companion.toastToText
+import java.math.BigInteger
+import java.security.MessageDigest
+
 
 
 @SuppressLint("ComposableNaming", "PrivateResource")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun signupScreen(context: Context, navController: NavHostController, db: UserDao) {
+
+    val paddingUp: Modifier = Modifier.padding(bottom = 8.dp)
+    val paddingDown: Modifier = Modifier.padding(bottom = 16.dp)
+
 
     var username by remember { mutableStateOf("") }
     var strength by remember { mutableStateOf("") }
@@ -74,40 +84,42 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Please Signup")
             Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = null
+                painter = painterResource( R.drawable.ic_launcher_background), // Ubah "logo.png" dengan path ke file logo Anda
+                contentDescription = "Logo",
+                modifier = Modifier.size(100.dp).padding(bottom = 16.dp)
             )
-            TextField(
+
+            Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
+            OutlinedTextField(
                 value = username,
                 onValueChange = { newUsername -> username = newUsername },
                 placeholder = { Text("Enter your Name") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
-            TextField(
+            OutlinedTextField(
                 value = email,
                 onValueChange = { newEmail -> email = newEmail
                     showError = !isEmailValid(newEmail)
                                 },
                 isError = showError,
                 placeholder = { Text("Enter your email") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor(),
                 trailingIcon = {
                     if (showError) {
-                        iconTextField(Color.Red)
+                        iconOutlinedTextField(Color.Red)
                     }else if(db.getUserByEmail(email)){
-                        iconTextField(Color.Red)
+                        iconOutlinedTextField(Color.Red)
                     }
                     else{
-                        iconTextField(Color.Green)
+                        iconOutlinedTextField(Color.Green)
                     }
                 }
 
             )
-            TextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = { newPassword ->
                     password = newPassword
@@ -127,7 +139,7 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                     }
                 },
                 placeholder = { Text("Enter your password") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingUp,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
@@ -156,11 +168,11 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                 }
             }
 
-            TextField(
+            OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { newPassword -> confirmPassword = newPassword },
                 placeholder = { Text("Renter your password") },
-                modifier = Modifier.fillMaxWidth().padding(15.dp),
+                modifier = paddingDown,
                 visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
@@ -196,11 +208,12 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                         toastToText(context, "Email already register")
                     }
                     else {
+                        val encryptedPassword = encryptMD5(password)
                         if(strength != "w"){
                             isButtonEnabled = false
                             mainTransport.updateUserSignUp(
                                 username,
-                                password,
+                                encryptedPassword,
                                 email,
                                 context,
                                 object : IonMaster.IonCallback {
@@ -241,6 +254,19 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
     }
 }
 
+fun encryptMD5(input: String): String {
+    val md = MessageDigest.getInstance("MD5")
+    val messageDigest = md.digest(input.toByteArray())
+    val no = BigInteger(1, messageDigest)
+    var hashText = no.toString(16)
+
+    while (hashText.length < 32) {
+        hashText = "0$hashText"
+    }
+
+    return hashText
+}
+
 fun checkPasswordStrength(password: String): PasswordStrength {
     var strength = PasswordStrength.WEAK
 
@@ -274,7 +300,7 @@ enum class PasswordStrength {
 
 
 @Composable
-fun iconTextField(
+fun iconOutlinedTextField(
     color:Color
 ) {
     Icon(
