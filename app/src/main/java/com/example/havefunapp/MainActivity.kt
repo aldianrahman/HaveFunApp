@@ -235,14 +235,20 @@ class MainActivity : ComponentActivity() {
 
 
                 for (i in 0 until array.size()) {
-                    val title = array.get(i).asJsonObject.get("title").asString
-                    val score = array.get(i).asJsonObject.get("vote_average").asString
-                    val releaseDate = array.get(i).asJsonObject.get("release_date").asString
-                    val overview = array.get(i).asJsonObject.get("overview").asString
-                    val backDrop = array.get(i).asJsonObject.get("backdrop_path").asString
-                    val posterPath = array.get(i).asJsonObject.get("poster_path").asString
+                    val title = array.get(i).asJsonObject.get("title").asString ?: ""
+                    val score = array.get(i).asJsonObject.get("vote_average").asString ?: ""
+                    val releaseDate = array.get(i).asJsonObject.get("release_date").asString ?: ""
+                    val overview = array.get(i).asJsonObject.get("overview").asString ?: ""
+                    val backDrop = array.get(i).asJsonObject.get("backdrop_path")
+                    var backDropString = ""
+                    backDropString = if (!backDrop.isJsonNull) {
+                        backDrop.asString
+                    } else {
+                        ""
+                    }
+                    val posterPath = array.get(i).asJsonObject.get("poster_path").asString ?: ""
 
-                    val movie = Movies(title = title, score = score, release_date = releaseDate, overview = overview, backDrop = backDrop, posterPath = posterPath)
+                    val movie = Movies(title = title, score = score, release_date = releaseDate, overview = overview, backDrop = backDropString, posterPath = posterPath)
                     stringFeature.add(movie)
                 }
             }

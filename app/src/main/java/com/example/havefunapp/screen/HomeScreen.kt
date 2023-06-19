@@ -31,10 +31,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,30 +98,63 @@ fun HomeScreen(
         )
     }
     val mainActivity = MainActivity()
+    val mainTransport = MainTransport()
     val featureSection: MutableList<Feature> = mutableListOf()
 
-    for (i in stringFeature.indices) {
-        val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
-        val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
+    var lastItemVisible by remember { mutableStateOf(false) }
+    var page by remember { mutableStateOf(2) }
 
-        val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
-        val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
-        val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+    if (lastItemVisible){
+        for (i in stringFeature.indices) {
+            val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
+            val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
 
-        val feature = Feature(
-            title = stringFeature[i].title,
-            score = stringFeature[i].score,
-            release_date = stringFeature[i].release_date,
-            overview = stringFeature[i].overview,
-            backDrop = stringFeature[i].backDrop,
-            posterPath = stringFeature[i].posterPath,
-            iconId = R.drawable.ic_videocam,
-            lightColor = Color(lightColor),
-            mediumColor = Color(mediumColor),
-            darkColor = Color(darkColor)
-        )
-        featureSection.add(feature)
+            val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
+            val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
+            val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+
+            val feature = Feature(
+                title = stringFeature[i].title,
+                score = stringFeature[i].score,
+                release_date = stringFeature[i].release_date,
+                overview = stringFeature[i].overview,
+                backDrop = stringFeature[i].backDrop,
+                posterPath = stringFeature[i].posterPath,
+                iconId = R.drawable.ic_videocam,
+                lightColor = Color(lightColor),
+                mediumColor = Color(mediumColor),
+                darkColor = Color(darkColor)
+            )
+            featureSection.add(feature)
+        }
+    }else{
+        for (i in stringFeature.indices) {
+            val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
+            val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
+
+            val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
+            val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
+            val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+
+            val feature = Feature(
+                title = stringFeature[i].title,
+                score = stringFeature[i].score,
+                release_date = stringFeature[i].release_date,
+                overview = stringFeature[i].overview,
+                backDrop = stringFeature[i].backDrop,
+                posterPath = stringFeature[i].posterPath,
+                iconId = R.drawable.ic_videocam,
+                lightColor = Color(lightColor),
+                mediumColor = Color(mediumColor),
+                darkColor = Color(darkColor)
+            )
+            featureSection.add(feature)
+        }
     }
+
+
+
+
 
 
 
@@ -135,7 +170,10 @@ fun HomeScreen(
             CurrentMeditation(data,email)
             FeatureSection(
                 stringFeature,
-                features = featureSection
+                features = featureSection,
+                onLastItemVisible = {
+                    lastItemVisible = true
+                }
             )
         }
         BottomMenu(
@@ -150,6 +188,13 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
             , navController = navController
         )
+        if (lastItemVisible){
+
+            lastItemVisible = false
+
+            mainActivity.getPopularApi(page++,mainTransport,context,"Halaman 2 ",stringFeature)
+
+        }
     }
 }
 
@@ -463,7 +508,8 @@ fun CurrentMeditation(
 @Composable
 fun FeatureSection(
     stringFeature: MutableList<Movies>,
-    features: List<Feature>
+    features: List<Feature>,
+    onLastItemVisible: () -> Unit
 ){
     val context = LocalContext.current
     val mainActivity = MainActivity()
@@ -486,8 +532,8 @@ fun FeatureSection(
 
                 // Menampilkan pesan toast "Terakhir" jika indeks item adalah indeks terakhir
                 if (index == features.size - 1) {
-                    Util.toastToText(context = context , "Terakhir")
-//                    mainActivity.getPopularApi(2,mainTransport,context,"Halaman 2",stringFeature)
+//                    Util.toastToText(context = context , "Terakhir")
+                    onLastItemVisible()
                 }
             }
         }
