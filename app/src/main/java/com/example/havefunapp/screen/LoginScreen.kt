@@ -153,7 +153,7 @@ fun loginScreen(
                         Util.toastToText(context, "Masukan Password Anda")
                     }else if(checkLogin) {
 
-                        editor.putBoolean(Util.RememberME,false) // di benerin getFilm nya baru sesuaikan lagi false nya
+                        editor.putBoolean(Util.RememberME,rememberMe) // di benerin getFilm nya baru sesuaikan lagi false nya
                         editor.putString(Util.idlUser,db.getUserIdByEmail(email))
                         editor.putString(Util.emailUser,email)
                         editor.putString(Util.nameUser,db.getUsernameByEmail(email))

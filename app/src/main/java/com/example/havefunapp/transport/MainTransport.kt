@@ -2,7 +2,6 @@ package com.example.havefunapp.transport
 
 import android.content.Context
 import android.util.Log
-import com.example.havefunapp.MainActivity
 import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.db.AppDatabase
 import com.example.havefunapp.util.Util
@@ -17,15 +16,10 @@ import com.koushikdutta.ion.Ion
 class MainTransport : IonMaster() {
     private val sendObject = JsonObject()
 
-    fun getDataFilm(context: Context?, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
-
-
-        sendObject.addProperty("dataSource", "Cluster0")
-        sendObject.addProperty("database", "todo")
-        sendObject.addProperty("collection", "have_fun")
+    fun getDataFilm(context: Context?,page: Int, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
 
         val returnObj: Future<JsonObject> = Ion.with(context)
-            .load(Util.getFilm())
+            .load(Util.getFilm(page))
             .setLogging("IONLOG", Log.DEBUG)
             .asJsonObject()
         returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))

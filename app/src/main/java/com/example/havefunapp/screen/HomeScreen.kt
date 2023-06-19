@@ -1,9 +1,9 @@
 package com.example.havefunapp.screen
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,16 +12,25 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,43 +47,33 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
+import com.example.havefunapp.model.Movies
+import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.AquaBlue
-import com.example.havefunapp.ui.theme.Beige1
-import com.example.havefunapp.ui.theme.Beige2
-import com.example.havefunapp.ui.theme.Beige3
 import com.example.havefunapp.ui.theme.Blue1
-import com.example.havefunapp.ui.theme.Blue2
-import com.example.havefunapp.ui.theme.Blue3
-import com.example.havefunapp.ui.theme.BlueViolet1
-import com.example.havefunapp.ui.theme.BlueViolet2
-import com.example.havefunapp.ui.theme.BlueViolet3
 import com.example.havefunapp.ui.theme.ButtonBlue
 import com.example.havefunapp.ui.theme.DarkerButtonBlue
 import com.example.havefunapp.ui.theme.DeepBlue
 import com.example.havefunapp.ui.theme.Green1
-import com.example.havefunapp.ui.theme.LightGreen1
-import com.example.havefunapp.ui.theme.LightGreen2
-import com.example.havefunapp.ui.theme.LightGreen3
 import com.example.havefunapp.ui.theme.OrangeYellow1
-import com.example.havefunapp.ui.theme.OrangeYellow2
-import com.example.havefunapp.ui.theme.OrangeYellow3
 import com.example.havefunapp.ui.theme.Red1
-import com.example.havefunapp.ui.theme.Red2
-import com.example.havefunapp.ui.theme.Red3
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.BottomMenuContent
 import com.example.havefunapp.util.Feature
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.standardQuadFromTo
+import kotlin.random.Random
 
 
 @Composable
@@ -87,7 +86,7 @@ fun HomeScreen(
     data: String,
     email: String,
     stringButton: List<String>,
-    stringFeature: List<String>,
+    stringFeature: MutableList<Movies>,
     navController: NavHostController
 ){
     val onBack = {
@@ -97,6 +96,33 @@ fun HomeScreen(
         )
     }
     val mainActivity = MainActivity()
+    val featureSection: MutableList<Feature> = mutableListOf()
+
+    for (i in stringFeature.indices) {
+        val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
+        val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
+
+        val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
+        val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
+        val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+
+        val feature = Feature(
+            title = stringFeature[i].title,
+            score = stringFeature[i].score,
+            release_date = stringFeature[i].release_date,
+            overview = stringFeature[i].overview,
+            backDrop = stringFeature[i].backDrop,
+            posterPath = stringFeature[i].posterPath,
+            iconId = R.drawable.ic_videocam,
+            lightColor = Color(lightColor),
+            mediumColor = Color(mediumColor),
+            darkColor = Color(darkColor)
+        )
+        featureSection.add(feature)
+    }
+
+
+
     mainActivity.BackPressHandler(onBackPressed = onBack)
     Box(
         modifier = Modifier
@@ -108,79 +134,8 @@ fun HomeScreen(
             ChipSection(chips = stringButton)
             CurrentMeditation(data,email)
             FeatureSection(
-                features = listOf(
-                    Feature(
-                        title = stringFeature[0],
-                        R.drawable.ic_headphone,
-                        BlueViolet1,
-                        BlueViolet2,
-                        BlueViolet3
-                    ),
-                    Feature(
-                        title = stringFeature[1],
-                        R.drawable.ic_videocam,
-                        LightGreen1,
-                        LightGreen2,
-                        LightGreen3
-                    ),
-                    Feature(
-                        title = stringFeature[2],
-                        R.drawable.ic_headphone,
-                        OrangeYellow3,
-                        OrangeYellow2,
-                        OrangeYellow1,
-
-                    ),
-                    Feature(
-                        title = stringFeature[3],
-                        R.drawable.ic_headphone,
-                        Beige1,
-                        Beige2,
-                        Beige3
-                    ),
-                    Feature(
-                        title = stringFeature[4],
-                        R.drawable.ic_headphone,
-                        Red1,
-                        Red2,
-                        Red3
-                    ),
-                    Feature(
-                        title = stringFeature[5],
-                        R.drawable.ic_headphone,
-                        Blue1,
-                        Blue2,
-                        Blue3
-                    ),Feature(
-                        title = stringFeature[6],
-                        R.drawable.ic_headphone,
-                        BlueViolet1,
-                        BlueViolet2,
-                        BlueViolet3
-                    ),
-                    Feature(
-                        title = stringFeature[7],
-                        R.drawable.ic_videocam,
-                        LightGreen1,
-                        LightGreen2,
-                        LightGreen3
-                    ),
-                    Feature(
-                        title = stringFeature[8],
-                        R.drawable.ic_headphone,
-                        OrangeYellow3,
-                        OrangeYellow2,
-                        OrangeYellow1,
-
-                        ),
-                    Feature(
-                        title = stringFeature[9],
-                        R.drawable.ic_headphone,
-                        Beige1,
-                        Beige2,
-                        Beige3
-                    ),
-                )
+                stringFeature,
+                features = featureSection
             )
         }
         BottomMenu(
@@ -197,6 +152,13 @@ fun HomeScreen(
         )
     }
 }
+
+fun adjustLightness(hue: Int, lightnessVariation: Float, lightness: Float): Int {
+    val saturation = 1.0f // Nilai saturasi yang tetap
+    val value = lightness * lightnessVariation // Mengatur variasi kecerahan sesuai dengan lightnessVariation
+    return android.graphics.Color.HSVToColor(floatArrayOf(hue.toFloat(), saturation, value))
+}
+
 
 @Composable
 fun BottomMenu(
@@ -500,8 +462,12 @@ fun CurrentMeditation(
 
 @Composable
 fun FeatureSection(
+    stringFeature: MutableList<Movies>,
     features: List<Feature>
 ){
+    val context = LocalContext.current
+    val mainActivity = MainActivity()
+    val mainTransport = MainTransport()
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -514,13 +480,15 @@ fun FeatureSection(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(start = 7.5.dp, end = 7.5.dp, bottom = 100.dp),
             modifier = Modifier.fillMaxHeight()
-        ){
-            items(
-                features.size
-            ){
-                FratureItem(
-                    feature = features[it]
-                )
+        ) {
+            itemsIndexed(features) { index, feature ->
+                FratureItem(feature = feature)
+
+                // Menampilkan pesan toast "Terakhir" jika indeks item adalah indeks terakhir
+                if (index == features.size - 1) {
+                    Util.toastToText(context = context , "Terakhir")
+//                    mainActivity.getPopularApi(2,mainTransport,context,"Halaman 2",stringFeature)
+                }
             }
         }
     }
@@ -577,6 +545,8 @@ fun FratureItem(
             close()
         }
 
+        var alertDialogOpen = remember { mutableStateOf(false) }
+
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -595,13 +565,26 @@ fun FratureItem(
                 .fillMaxSize()
                 .padding(15.dp)
         ){
-            Text(
-                text=feature.title,
-                style = MaterialTheme.typography.headlineMedium,
-                lineHeight = 26.sp,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-            )
+            Column(
+            ) {
+                Text(
+                    text=feature.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 12.sp),
+                    lineHeight = 26.sp,
+                    modifier = Modifier
+                        .align(Alignment.Start).fillMaxWidth()//topstart
+                )
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+                Text(
+                    text=feature.release_date,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 10.sp, fontWeight = FontWeight.Thin),
+                    lineHeight = 26.sp,
+                    modifier = Modifier
+                        .align(Alignment.End).fillMaxWidth()
+                )
+            }
             Icon(
                 painter = painterResource(id = feature.iconId),
                 contentDescription = feature.title,
@@ -609,19 +592,104 @@ fun FratureItem(
                 modifier = Modifier.align(Alignment.BottomStart)
             )
             Text(
-                text = "Start",
+                text = feature.score,
                 color = TextWhite,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clickable {
-                        Util.toastToText(contex,""+feature.title)
+
+
+                        alertDialogOpen.value = true
                     }
                     .align(Alignment.BottomEnd)
                     .clip(RoundedCornerShape(10.dp))
                     .background(ButtonBlue)
                     .padding(vertical = 6.dp, horizontal = 15.dp)
             )
+
+            if (alertDialogOpen.value) {
+                AlertDialog(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = DeepBlue,
+                    onDismissRequest = { alertDialogOpen.value = false },
+                    title = { Text(text = feature.title) },
+                    text = {
+                           clickDetail(feature.overview,feature.backDrop,feature.posterPath)
+                    },
+                    confirmButton = {
+                        val mainActivity  = MainActivity()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+
+                            Button(
+                                colors = mainActivity.defaultButtonColor(),
+                                onClick = { Util.toastToText(contex,"Data Tersimpan") },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ThumbUp,
+                                    contentDescription = "ThumbUp",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.White
+                                )
+                            }
+
+                            Button(
+                                colors = mainActivity.defaultButtonColor(),
+                                onClick = { alertDialogOpen.value = false }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Close Icon",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.Red
+                                )
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
+}
+@Composable
+fun clickDetail(overview: String, backdrop: String, posterPath: String) {
+    val itemsList = (1)
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
+            ImageViewByUrl("https://image.tmdb.org/t/p/original/$posterPath")
+        }
+        items(itemsList) {
+            // Composable item content
+            Text(overview)
+        }
+        item {
+            ImageViewByUrl("https://image.tmdb.org/t/p/original/$backdrop")
+        }
+    }
+}
+
+@Composable
+fun ImageViewByUrl(url: String) {
+    val painter = rememberImagePainter(
+        data = url
+//        builder = {
+//            transformations(CircleCropTransformation())
+//        }
+    )
+
+    Image(
+        painter = painter,
+        contentDescription = null, // Optional content description
+        contentScale = ContentScale.Fit,
+        modifier = Modifier.size(300.dp)
+    )
 }

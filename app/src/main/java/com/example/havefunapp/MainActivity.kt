@@ -30,28 +30,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.havefunapp.model.Movies
 import com.example.havefunapp.screen.HomeScreen
 import com.example.havefunapp.screen.SecondScreen
 
 
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.screen.SplashScreen
-import com.example.havefunapp.screen.isEmailValid
 import com.example.havefunapp.screen.loginScreen
 import com.example.havefunapp.screen.signupScreen
 import com.example.havefunapp.transport.IonMaster
 import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.ButtonBlue
 import com.example.havefunapp.ui.theme.DeepBlue
-import com.example.havefunapp.ui.theme.LightRed
 import com.example.havefunapp.ui.theme.MeditationUIYouTubeTheme
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.Util
 import com.google.gson.JsonObject
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
@@ -73,85 +70,17 @@ class MainActivity : ComponentActivity() {
 
                 val context = LocalContext.current
 
-
-                val TAG: String = "JSON_MONGODB"
-                val mainTransport = MainTransport()
                 val stringButton = mutableListOf<String>()
-                val stringFeature = mutableListOf<String>()
-
-                 mainTransport.getDataFilm(context,object : IonMaster.IonCallback {
-                    override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
-                        Log.i(TAG, "onReadyCallback E : $errorMessage")
-                        Log.i(TAG, "onReadyCallback R : $`object`")
-
-                        val result = `object` as JsonObject
-
-                        val array = result.asJsonObject.get("results").asJsonArray
-
-
-
-                        for (i in 0 until array.size()) {
-                            val element = array.get(i).asJsonObject.get("original_title").asString
-                            stringFeature.add(element)
-                        }
-
-
-
-
-//                        stringFeature.add("Feature 2")
-//                        stringFeature.add("Feature 3")
-//                        stringFeature.add("Feature 4")
-//                        stringFeature.add("Feature 5")
-//                        stringFeature.add("Feature 6")
-
-                    }
-
-                })
-
-
-
                 stringButton.add("Top Film")
                 stringButton.add("Top Music")
                 stringButton.add("Top News")
 
-                // Populate stringFeature list
+                val TAG = "JSON_MONGODB"
+                val mainTransport = MainTransport()
+                val stringFeature = mutableListOf<Movies>()
 
+                getPopularApi(1,mainTransport,context,TAG,stringFeature)
 
-
-
-//                mainTransport.getData(context, object : IonMaster.IonCallback {
-//                    override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
-//                        var result = `object`
-//                        if (errorMessage != null) {
-//                            Log.i(TAG, "getApiMongodb Error: $errorMessage")
-//                        } else {
-//                            Log.i(TAG, "getApiMongodb Success: $result")
-//                            if (result != null) {
-//                                result as JsonObject
-//                                val document = result.getAsJsonObject("document")
-//                                val data_user = document.getAsJsonObject("data_user")
-//                                val buttonString = document.getAsJsonArray("listButton")
-//                                val featureString = document.getAsJsonArray("listFeature")
-//                                names = data_user["name"].asString
-//                                email = data_user["email"].asString
-//                                Log.i(TAG, "Solution: $names")
-//                                Log.i(TAG, "Button String: $buttonString")
-//
-//                                for (i in 0 until buttonString.size()) {
-//                                    val button = buttonString.get(i).asString
-//                                    stringButton.add(button)
-//                                    Log.d("Button", button)
-//                                }
-//
-//                                for (i in 0 until featureString.size()) {
-//                                    val feature = featureString.get(i).asString
-//                                    stringFeature.add(feature)
-//                                    Log.d("Feature", feature)
-//                                }
-//                            }
-//                        }
-//                    }
-//                })
 
                 val db: UserDao = AppDatabase.getInstance(context)?.userDao()!!
                 refeshDB(context,db)
@@ -196,22 +125,28 @@ class MainActivity : ComponentActivity() {
 
                 var toGo = ""
 
-                toGo = if (isLogin){
-                    ScreenRoute.HomeScreen.route
-                }else{
-                    ScreenRoute.SplashScreen.route
-                }
+
 
 
                 val navController = rememberNavController()
 
-                NavHost(navController = navController, startDestination = toGo) {
+                NavHost(navController = navController, startDestination = ScreenRoute.SplashScreen.route) {
 
 
 
                     composable(ScreenRoute.SplashScreen.route) {
                         refeshDB(context,db)
-                        SplashScreen(context) { navController.navigate(ScreenRoute.SignupScreen.route) }
+                        SplashScreen(context) {
+
+                            toGo = if (isLogin){
+                                ScreenRoute.HomeScreen.route
+                            }else{
+                                ScreenRoute.SignupScreen.route
+                            }
+
+                            navController.navigate(toGo)
+
+                        }
                     }
 
                     composable(ScreenRoute.SignupScreen.route){
@@ -278,6 +213,41 @@ class MainActivity : ComponentActivity() {
 
 
         }
+    }
+
+    fun getPopularApi(
+        page: Int,
+        mainTransport: MainTransport,
+        context: Context,
+        TAG: String,
+        stringFeature: MutableList<Movies>
+    ) {
+        mainTransport.getDataFilm(context,page,object : IonMaster.IonCallback {
+            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+                Log.i(TAG, "onReadyCallback E : $errorMessage")
+                Log.i(TAG, "onReadyCallback R : $`object`")
+
+                val result = `object` as JsonObject
+
+                val array = result.asJsonObject.get("results").asJsonArray
+
+
+
+
+                for (i in 0 until array.size()) {
+                    val title = array.get(i).asJsonObject.get("title").asString
+                    val score = array.get(i).asJsonObject.get("vote_average").asString
+                    val releaseDate = array.get(i).asJsonObject.get("release_date").asString
+                    val overview = array.get(i).asJsonObject.get("overview").asString
+                    val backDrop = array.get(i).asJsonObject.get("backdrop_path").asString
+                    val posterPath = array.get(i).asJsonObject.get("poster_path").asString
+
+                    val movie = Movies(title = title, score = score, release_date = releaseDate, overview = overview, backDrop = backDrop, posterPath = posterPath)
+                    stringFeature.add(movie)
+                }
+            }
+
+        })
     }
 
     @Composable
