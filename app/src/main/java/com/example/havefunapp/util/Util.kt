@@ -54,7 +54,7 @@ class Util {
 
         fun getFilm(i: Int): String {
 
-            return "https://api.themoviedb.org/3/movie/popular?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
+            return "https://api.themoviedb.org/3/discover/movie?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
         }
     }
 

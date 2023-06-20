@@ -47,10 +47,13 @@ import com.example.havefunapp.ui.theme.MeditationUIYouTubeTheme
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.Util
 import com.google.gson.JsonObject
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -248,7 +251,13 @@ class MainActivity : ComponentActivity() {
                     }
                     val posterPath = array.get(i).asJsonObject.get("poster_path").asString ?: ""
 
-                    val movie = Movies(title = title, score = score, release_date = releaseDate, overview = overview, backDrop = backDropString, posterPath = posterPath)
+                    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+
+                    val date = inputFormat.parse(releaseDate)
+                    val formattedDate = outputFormat.format(date as Date)
+
+                    val movie = Movies(title = title, score = score, release_date = formattedDate, overview = overview, backDrop = backDropString, posterPath = posterPath)
                     stringFeature.add(movie)
                 }
             }

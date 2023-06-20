@@ -30,4 +30,8 @@ val Green1 = Color(0xff81c784)
 val Green2 = Color(0xff4caf50)
 val Green3 = Color(0xff388e3c)
 
+val BlueOcean = Color(0xFF007BA7)
+val BeachSand = Color(0xFFEFECCA)
+val TropicalGreen = Color(0xFF006400)
+
 val primaryColor = DeepBlue

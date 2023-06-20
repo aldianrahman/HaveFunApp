@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_EXPRESSION")
+
 package com.example.havefunapp.screen
 
 import android.content.Context
@@ -12,12 +14,10 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,15 +28,16 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,30 +53,34 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
+import com.example.havefunapp.model.ColorModelLight
+import com.example.havefunapp.model.ColorModelDark
+import com.example.havefunapp.model.ColorModelMedium
 import com.example.havefunapp.model.Movies
 import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.AquaBlue
 import com.example.havefunapp.ui.theme.Blue1
+import com.example.havefunapp.ui.theme.Blue2
+import com.example.havefunapp.ui.theme.Blue3
+import com.example.havefunapp.ui.theme.BlueOcean
 import com.example.havefunapp.ui.theme.ButtonBlue
 import com.example.havefunapp.ui.theme.DarkerButtonBlue
 import com.example.havefunapp.ui.theme.DeepBlue
-import com.example.havefunapp.ui.theme.Green1
-import com.example.havefunapp.ui.theme.OrangeYellow1
-import com.example.havefunapp.ui.theme.Red1
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.BottomMenuContent
 import com.example.havefunapp.util.Feature
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.standardQuadFromTo
-import kotlin.random.Random
 
 
 @Composable
@@ -104,14 +109,47 @@ fun HomeScreen(
     var lastItemVisible by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf(2) }
 
+
+    val colorListDark = listOf(
+        ColorModelDark("OrangeYellow3", 0xfff0bd28),
+        ColorModelDark("Beige3", 0xfff9a27b),
+        ColorModelDark("LightGreen3", 0xff11d79b),
+        ColorModelDark("BlueViolet3", 0xff8f98fd),
+        ColorModelDark("Red3", 0xffd32f2f),
+        ColorModelDark("Blue3", 0xff1976d2),
+        ColorModelDark("Green3", 0xff388e3c)
+    )
+
+    val colorListLight = listOf(
+        ColorModelLight("OrangeYellow1", 0xfff4cf65),
+        ColorModelLight("Beige1", 0xfffdbda1),
+        ColorModelLight("LightGreen1", 0xff54e1b6),
+        ColorModelLight("BlueViolet1", 0xffaeb4fd),
+        ColorModelLight("Red1", 0xffe57373),
+        ColorModelLight("Blue1", 0xff64b5f6),
+        ColorModelLight("Green1", 0xff81c784),
+    )
+
+    val colorListMedium = listOf(
+        ColorModelMedium("OrangeYellow2", 0xfff1c746),
+        ColorModelMedium("Beige2", 0xfffcaf90),
+        ColorModelMedium("LightGreen2", 0xff36ddab),
+        ColorModelMedium("BlueViolet2", 0xff9fa5fe),
+        ColorModelMedium("Red2", 0xfff44336),
+        ColorModelMedium("Blue2", 0xff2196f3),
+        ColorModelMedium("Green2", 0xff4caf50),
+        )
+
+    var onChipIndex by remember {
+        mutableStateOf(0)
+    }
+
     if (lastItemVisible){
         for (i in stringFeature.indices) {
-            val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
-            val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
 
-            val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
-            val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
-            val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+            val lightColorIndex = i % colorListLight.size
+            val mediumColorIndex = i % colorListMedium.size
+            val darkColorIndex = i % colorListDark.size
 
             val feature = Feature(
                 title = stringFeature[i].title,
@@ -121,20 +159,17 @@ fun HomeScreen(
                 backDrop = stringFeature[i].backDrop,
                 posterPath = stringFeature[i].posterPath,
                 iconId = R.drawable.ic_videocam,
-                lightColor = Color(lightColor),
-                mediumColor = Color(mediumColor),
-                darkColor = Color(darkColor)
+                lightColor = Color(lightColorIndex),
+                mediumColor = Color(mediumColorIndex),
+                darkColor = Color(darkColorIndex)
             )
             featureSection.add(feature)
         }
     }else{
         for (i in stringFeature.indices) {
-            val colorIndex = Random.nextInt(360) // Rentang hue dari 0 hingga 359
-            val lightnessVariation = Random.nextFloat() * 0.5f + 0.25f // Rentang kecerahan dari 0.25 hingga 0.75
-
-            val lightColor = adjustLightness(colorIndex, lightnessVariation, 1.0f) // Kecerahan maksimal
-            val mediumColor = adjustLightness(colorIndex, lightnessVariation, 0.75f) // Kecerahan sedang
-            val darkColor = adjustLightness(colorIndex, lightnessVariation, 0.5f) // Kecerahan minimal
+            val lightColorIndex = i % colorListLight.size
+            val mediumColorIndex = i % colorListMedium.size
+            val darkColorIndex = i % colorListDark.size
 
             val feature = Feature(
                 title = stringFeature[i].title,
@@ -144,18 +179,13 @@ fun HomeScreen(
                 backDrop = stringFeature[i].backDrop,
                 posterPath = stringFeature[i].posterPath,
                 iconId = R.drawable.ic_videocam,
-                lightColor = Color(lightColor),
-                mediumColor = Color(mediumColor),
-                darkColor = Color(darkColor)
+                lightColor = Color(colorListLight[lightColorIndex].value),
+                mediumColor = Color(colorListMedium[mediumColorIndex].value),
+                darkColor = Color(colorListDark[darkColorIndex].value)
             )
             featureSection.add(feature)
         }
     }
-
-
-
-
-
 
 
     mainActivity.BackPressHandler(onBackPressed = onBack)
@@ -166,18 +196,19 @@ fun HomeScreen(
     ){
         Column {
             GreetingSection(salam,harapan,date)
-            ChipSection(chips = stringButton)
-            CurrentMeditation(data,email)
+            ChipSection(chips = stringButton){selectIndex ->
+                onChipIndex = selectIndex
+            }
+            CurrentMeditation(data,email,editor,navController)
             FeatureSection(
-                stringFeature,
-                features = featureSection,
-                onLastItemVisible = {
-                    lastItemVisible = true
-                }
-            )
+                onChipIndex,
+                stringButton,
+                features = featureSection
+            ) {
+                lastItemVisible = true
+            }
         }
         BottomMenu(
-            editor = editor,
             items = listOf(
                 BottomMenuContent("Home", R.drawable.ic_home),
                 BottomMenuContent("Meditate", R.drawable.ic_bubble),
@@ -198,16 +229,11 @@ fun HomeScreen(
     }
 }
 
-fun adjustLightness(hue: Int, lightnessVariation: Float, lightness: Float): Int {
-    val saturation = 1.0f // Nilai saturasi yang tetap
-    val value = lightness * lightnessVariation // Mengatur variasi kecerahan sesuai dengan lightnessVariation
-    return android.graphics.Color.HSVToColor(floatArrayOf(hue.toFloat(), saturation, value))
-}
+
 
 
 @Composable
 fun BottomMenu(
-    editor: Editor?,
     items: List<BottomMenuContent>,
     modifier: Modifier = Modifier,
     activeHighlightColor: Color = ButtonBlue,
@@ -238,17 +264,10 @@ fun BottomMenu(
                 selectedItemIndex = index
                 if (selectedItemIndex == 0){
                     navController?.navigate(ScreenRoute.HomeScreen.route)
-                }else if (selectedItemIndex == 1){
-                    navController?.navigate(ScreenRoute.SecondScreen.withArgs(selectedItemIndex.toString()))
-                }else if(selectedItemIndex == 4){
-
-
-
-                    editor?.clear()
-                    editor?.apply()
-                    navController?.navigate(ScreenRoute.SplashScreen.route)
-
                 }
+//                else if (selectedItemIndex == 1){
+//                    navController?.navigate(ScreenRoute.SecondScreen.withArgs(selectedItemIndex.toString()))
+//                }
             }
         }
     }
@@ -334,7 +353,8 @@ fun GreetingSection(
 
 @Composable
 fun ChipSection(
-    chips: List<String>
+    chips: List<String>,
+    onChipSelected: (Int) -> Unit
 ){
     var selectedChipIndex by remember {
         mutableStateOf(0)
@@ -348,7 +368,8 @@ fun ChipSection(
                     .padding(start = 15.dp, top = 15.dp, bottom = 15.dp)
                     .clickable {
                         selectedChipIndex = it
-                        Util.toastToText(context,""+chips[selectedChipIndex])
+//                        Util.toastToText(context,"$selectedChipIndex : "+chips[selectedChipIndex])
+                        onChipSelected(selectedChipIndex)
                     }
                     .clip(RoundedCornerShape(10.dp))
                     .background(
@@ -367,158 +388,170 @@ fun ChipSection(
 }
 
 @Composable
+fun LogoutDialog(
+    onConfirmLogout: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    val showDialog = remember { mutableStateOf(true) }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { onDismissRequest.invoke() },
+            title = {
+                Text(text = stringResource(R.string.logout_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.logout_message))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onConfirmLogout.invoke()
+                        showDialog.value = false
+                    }
+                ) {
+                    Text(text = stringResource(R.string.yes))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog.value = false
+                        onDismissRequest.invoke()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
 fun CurrentMeditation(
     data: String,
-    email: String
+    email: String,
+    editor: Editor?,
+    navController: NavHostController?
 ){
     val contex = LocalContext.current
-//    BoxWithConstraints(
-//        contentAlignment = Alignment.Center,
-//        modifier = Modifier
-//            .padding(15.dp)
-//            .clip(RoundedCornerShape(10.dp))
-//            .background(Red3)
-//            .padding(horizontal = 15.dp, vertical = 20.dp).fillMaxWidth().height(40.dp)
-//    ){
-//        val width = constraints.maxWidth
-//        val height = constraints.maxHeight
-//
-//        //Medium colored path
-//        val mediumColoredPoint1 = Offset(0f,height * 0.3f)
-//        val mediumColoredPoint2 = Offset(width * 0.1f,height * 0.35f)
-//        val mediumColoredPoint3 = Offset(width * 0.4f,height * 0.05f)
-//        val mediumColoredPoint4 = Offset(width *0.7f,height * 0.6f)
-//        val mediumColoredPoint5 = Offset(width * 1.4f,-height.toFloat())
-//
-//        val mediumColoredPath = Path().apply {
-//            moveTo(mediumColoredPoint1.x,mediumColoredPoint2.y)
-//            standardQuadFromTo(mediumColoredPoint1,mediumColoredPoint2)
-//            standardQuadFromTo(mediumColoredPoint2,mediumColoredPoint3)
-//            standardQuadFromTo(mediumColoredPoint3,mediumColoredPoint4)
-//            standardQuadFromTo(mediumColoredPoint4,mediumColoredPoint5)
-//            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
-//            lineTo(-100f, height.toFloat() + 100f)
-//            close()
-//        }
-//
-//        // Light colored path
-//        val lightPoint1 = Offset(0f, height * 0.35f)
-//        val lightPoint2 = Offset(width * 0.1f, height * 0.4f)
-//        val lightPoint3 = Offset(width * 0.3f, height * 0.35f)
-//        val lightPoint4 = Offset(width * 0.65f, height.toFloat())
-//        val lightPoint5 = Offset(width * 1.4f, -height.toFloat() / 3f)
-//
-//        val lightColoredPath = Path().apply {
-//            moveTo(lightPoint1.x, lightPoint1.y)
-//            standardQuadFromTo(lightPoint1, lightPoint2)
-//            standardQuadFromTo(lightPoint2, lightPoint3)
-//            standardQuadFromTo(lightPoint3, lightPoint4)
-//            standardQuadFromTo(lightPoint4, lightPoint5)
-//            lineTo(width.toFloat() + 100f, height.toFloat() + 100f)
-//            lineTo(-100f, height.toFloat() + 100f)
-//            close()
-//        }
-//
-//        Canvas(
-//            modifier = Modifier
-//                .fillMaxSize()
-//        ){
-//            drawPath(
-//                path = mediumColoredPath,
-//                color = Red2
-//            )
-//            drawPath(
-//                path = lightColoredPath,
-//                color = Red1
-//            )
-//        }
-//    }
+
+    var showUserBox by remember {
+        mutableStateOf(false)
+    }
 
     val gradientColors = listOf(
 
         Blue1,
-        Red1,
-        OrangeYellow1,
-        Green1
+        Blue2,
+        Blue3,
+        BlueOcean
 
     )
 
     val gradient = Brush.verticalGradient(gradientColors)
+    var logout by remember { mutableStateOf(false) }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .padding(15.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(gradient)
-            .padding(horizontal = 15.dp, vertical = 20.dp)
-            .fillMaxWidth()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Unspecified,
-                            Color.Transparent
-                        ),
-                        startX = 0.1f
-                    )
-                )
-        ) {
-            Text(
-                text = email,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    shadow = Shadow(
-                        color = Color.Gray,
-                        offset = Offset(2f, 2f),
-                        blurRadius = 4f
-                    )
-                )
-            )
-            Text(
-                text = data,
-                color = TextWhite,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    shadow = Shadow(
-                        color = Color.Gray,
-                        offset = Offset(1f,1f),
-                        blurRadius = 2f
-                    )
-                )
-            )
-        }
-
-
         Icon(
-            painter = painterResource(R.drawable.ic_play),
-            contentDescription = "Play",
-            tint = Color.White,
-            modifier = Modifier
-                .size(16.dp)
-                .clickable {
-                    Util.toastToText(contex,"Music Play")
-                }
+            imageVector = if (showUserBox) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+            contentDescription = "ThumbUp",
+            modifier = Modifier.size(30.dp).clickable {
+                showUserBox = !showUserBox
+            },
+            tint = Color.White
         )
+        if (showUserBox){
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(15.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(gradient)
+                    .padding(horizontal = 15.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.Unspecified,
+                                    Color.Transparent
+                                ),
+                                startX = 0.1f
+                            )
+                        )
+                ) {
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            shadow = Shadow(
+                                color = Color.Gray,
+                                offset = Offset(2f, 2f),
+                                blurRadius = 4f
+                            )
+                        )
+                    )
+                    Text(
+                        text = data,
+                        color = TextWhite,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            shadow = Shadow(
+                                color = Color.Gray,
+                                offset = Offset(1f,1f),
+                                blurRadius = 2f
+                            )
+                        )
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Filled.ExitToApp,
+                    contentDescription = "Play",
+                    tint = Color.Red,
+                    modifier = Modifier.background(Color.White)
+                        .size(24.dp)
+                        .clickable {
+                            logout = true
+                        }
+                )
+
+                if (logout) {
+                    LogoutDialog(
+                        onConfirmLogout = {
+                            editor?.clear()
+                            editor?.apply()
+                            navController?.navigate(ScreenRoute.SplashScreen.route)
+                        },
+                        onDismissRequest = {
+                            logout = false
+                        }
+                    )
+                }
+            }
+        }
     }
 
-}
+
+    }
 
 @Composable
 fun FeatureSection(
-    stringFeature: MutableList<Movies>,
+    onChipIndex: Int,
+    stringButton: List<String>,
     features: List<Feature>,
     onLastItemVisible: () -> Unit
 ){
-    val context = LocalContext.current
-    val mainActivity = MainActivity()
-    val mainTransport = MainTransport()
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            "Features",
+            stringButton[onChipIndex],
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(vertical = 5.dp, horizontal = 15.dp)
         )
@@ -614,21 +647,26 @@ fun FratureItem(
             Column(
             ) {
                 Text(
-                    text=feature.title,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 12.sp),
-                    lineHeight = 26.sp,
-                    modifier = Modifier
-                        .align(Alignment.Start).fillMaxWidth()//topstart
-                )
-                Spacer(
-                    modifier = Modifier.height(8.dp)
+                    text = feature.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        shadow = Shadow(
+                            color = Color.Gray,
+                            offset = Offset(2f, 2f),
+                            blurRadius = 4f
+                        )
+                    )
                 )
                 Text(
-                    text=feature.release_date,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 10.sp, fontWeight = FontWeight.Thin),
-                    lineHeight = 26.sp,
-                    modifier = Modifier
-                        .align(Alignment.End).fillMaxWidth()
+                    text = feature.release_date,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize = 12.sp,
+                        shadow = Shadow(
+                            color = TextWhite,
+                            offset = Offset(1f,1f),
+                            blurRadius = 2f
+                        )
+                    )
                 )
             }
             Icon(
@@ -657,9 +695,23 @@ fun FratureItem(
             if (alertDialogOpen.value) {
                 AlertDialog(
                     modifier = Modifier.fillMaxSize(),
-                    containerColor = DeepBlue,
+                    containerColor = feature.lightColor,
                     onDismissRequest = { alertDialogOpen.value = false },
-                    title = { Text(text = feature.title) },
+                    title = {
+                        Text(
+                            textAlign = TextAlign.Center,
+                            text = feature.title,
+                            color = TextWhite,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 30.sp,
+                                shadow = Shadow(
+                                    color = Color.Black,
+                                    offset = Offset(2f,2f),
+                                    blurRadius = 4f
+                                )
+                            )
+                        )
+                            },
                     text = {
                            clickDetail(feature.overview,feature.backDrop,feature.posterPath)
                     },
@@ -715,7 +767,18 @@ fun clickDetail(overview: String, backdrop: String, posterPath: String) {
         }
         items(itemsList) {
             // Composable item content
-            Text(overview)
+            Text(
+                text = overview,
+                color = TextWhite,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 20.sp,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        offset = Offset(1f,1f),
+                        blurRadius = 2f
+                    )
+                )
+            )
         }
         item {
             ImageViewByUrl("https://image.tmdb.org/t/p/original/$backdrop")

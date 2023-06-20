@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">HaveFunApp</string>
-    <string name="error_when_processing_your_data">Data Gagal Di Proses\n</string>
-    <string name="check_your_internet_connection">Mohon Cek Koneksi Anda\n</string>
+    <string name="error_when_processing_your_data">Data Gagal Di Proses</string>
+    <string name="check_your_internet_connection">Mohon Cek Koneksi Anda</string>
+    <string name="logout_title">Konfirmasi Logout!</string>
+    <string name="logout_message">Apakah anda ingin Logout?</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
 </resources>
