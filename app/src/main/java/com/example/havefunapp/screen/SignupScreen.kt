@@ -155,7 +155,8 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                             painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
                                 com.google.android.material.R.drawable.design_ic_visibility
                             ),
-                            contentDescription = "Toggle Password Visibility"
+                            contentDescription = "Toggle Password Visibility",
+                            tint = Color.White
                         )
                     }
                 },
@@ -188,7 +189,8 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                             painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
                                 com.google.android.material.R.drawable.design_ic_visibility
                             ),
-                            contentDescription = "Toggle Password Visibility"
+                            contentDescription = "Toggle Password Visibility",
+                            tint = Color.White
                         )
                     }
                 },
@@ -257,7 +259,8 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                 },
                 textDecoration = TextDecoration.Underline,
                 fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Italic,
+                color = Color.White
             )
         }
     }

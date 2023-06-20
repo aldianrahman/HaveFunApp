@@ -8,7 +8,7 @@ class Util {
 
     companion object {
         val NamePref: String? = "pref"
-        const val appName: String = "MyApp"
+        const val appName: String = "Have Fun App"
         val RememberME: String? = "remember_me"
         val emailUser: String? = "email_user"
         val nameUser: String? = "name_user"
@@ -52,9 +52,18 @@ class Util {
             Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
         }
 
-        fun getFilm(i: Int): String {
+        fun getFilm(
+            i: Int,
+            query: String?
+        ): String {
+            var url =""
+            url = if (i != 0){
+                "https://api.themoviedb.org/3/discover/movie?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
+            }else{
+                "https://api.themoviedb.org/3/search/movie?api_key=b8344cb11b1112f5b64098c48b4e1b7d&query=$query"
+            }
 
-            return "https://api.themoviedb.org/3/discover/movie?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
+            return url
         }
     }
 

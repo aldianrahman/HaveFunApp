@@ -16,15 +16,35 @@ import com.koushikdutta.ion.Ion
 class MainTransport : IonMaster() {
     private val sendObject = JsonObject()
 
-    fun getDataFilm(context: Context?,page: Int, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
+        fun searchFilm(context: Context?,type: Int,query: String, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
 
-        val returnObj: Future<JsonObject> = Ion.with(context)
-            .load(Util.getFilm(page))
-            .setLogging("IONLOG", Log.DEBUG)
-            .asJsonObject()
-        returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
-        return returnObj
-    }
+            val returnObj: Future<JsonObject> = Ion.with(context)
+                .load(Util.getFilm(type,query))
+                .setLogging("IONLOG", Log.DEBUG)
+                .asJsonObject()
+            returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
+            return returnObj
+        }
+
+        fun getPupularFilm(context: Context?, page: Int, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
+
+            val returnObj: Future<JsonObject> = Ion.with(context)
+                .load(Util.getFilm(page,null))
+                .setLogging("IONLOG", Log.DEBUG)
+                .asJsonObject()
+            returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
+            return returnObj
+        }
+
+        fun getComingSoonFilm(context: Context?, page: Int, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {
+
+            val returnObj: Future<JsonObject> = Ion.with(context)
+                .load("https://api.themoviedb.org/3/movie/upcoming?api_key=8af32cafa0a61c0821df743b90b4d56e")
+                .setLogging("IONLOG", Log.DEBUG)
+                .asJsonObject()
+            returnObj.setCallback(getJsonFutureCallback(context!!, callback!!))
+            return returnObj
+        }
 
 
         fun getData(context: Context?, callback: IonMaster.IonCallback?): java.util.concurrent.Future<JsonObject>? {

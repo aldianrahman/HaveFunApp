@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +46,7 @@ import androidx.navigation.NavHostController
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
 import com.example.havefunapp.dao.UserDao
+import com.example.havefunapp.ui.theme.DeepBlue
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
@@ -123,7 +126,8 @@ fun loginScreen(
                         Icon(
                             painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
                                 com.google.android.material.R.drawable.design_ic_visibility),
-                            contentDescription = "Toggle Password Visibility"
+                            contentDescription = "Toggle Password Visibility",
+                            tint = TextWhite
                         )
                     }
                 }
@@ -135,6 +139,11 @@ fun loginScreen(
                 Checkbox(
                     checked = rememberMe,
                     onCheckedChange = { rememberMe = it },
+                    colors = CheckboxDefaults.colors(
+                        checkmarkColor = TextWhite,
+                        checkedColor = DeepBlue,
+                        uncheckedColor = TextWhite
+                    ),
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text("Ingat Saya")
@@ -183,7 +192,8 @@ fun loginScreen(
                     navController.navigate(ScreenRoute.SignupScreen.route)
                 },
                 fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic
+                fontStyle = FontStyle.Italic,
+                color = Color.White
             )
         }
     }
