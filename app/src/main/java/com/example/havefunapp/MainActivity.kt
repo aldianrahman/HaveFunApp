@@ -82,7 +82,9 @@ class MainActivity : ComponentActivity() {
                 val mainTransport = MainTransport()
                 val stringFeature = mutableListOf<Movies>()
 
-                getPopularApi(1,mainTransport,context,TAG,stringFeature)
+                getPopularApi(1,mainTransport,context,TAG,stringFeature){bool->
+//                    Util.toastToText(context,bool.toString())
+                }
 
 
                 val db: UserDao = AppDatabase.getInstance(context)?.userDao()!!
@@ -218,30 +220,58 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun getPopularApi(
-        page: Int,
+    fun searchQueryFilm(
+        searchText: String,
         mainTransport: MainTransport,
         context: Context,
-        TAG: String,
-        stringFeature: MutableList<Movies>
+        onLoad: (Boolean) -> Unit,
+        onSuccess: (MutableList<Movies>) -> Unit
     ) {
-        mainTransport.getDataFilm(context,page,object : IonMaster.IonCallback {
+
+        mainTransport.searchFilm(context,type = 0,searchText,object : IonMaster.IonCallback {
             override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+                val TAG = "Search API"
                 Log.i(TAG, "onReadyCallback E : $errorMessage")
                 Log.i(TAG, "onReadyCallback R : $`object`")
 
                 val result = `object` as JsonObject
-
                 val array = result.asJsonObject.get("results").asJsonArray
-
-
+                val moviesList: MutableList<Movies> = mutableListOf()
 
 
                 for (i in 0 until array.size()) {
-                    val title = array.get(i).asJsonObject.get("title").asString ?: ""
-                    val score = array.get(i).asJsonObject.get("vote_average").asString ?: ""
-                    val releaseDate = array.get(i).asJsonObject.get("release_date").asString ?: ""
-                    val overview = array.get(i).asJsonObject.get("overview").asString ?: ""
+                    var titleString = ""
+                    val title = array.get(i).asJsonObject.get("title")
+                    titleString = if (!title.isJsonNull){
+                        title.asString
+                    }else{
+                        ""
+                    }
+
+                    var scoreString = ""
+                    val score = array.get(i).asJsonObject.get("vote_average")
+                    scoreString =  if (!score.isJsonNull){
+                        score.asString
+                    }else{
+                        ""
+                    }
+
+                    var releaseString = ""
+                    val releaseDate = array.get(i).asJsonObject.get("release_date")
+                    releaseString =  if (!releaseDate.isJsonNull){
+                        releaseDate.asString
+                    }else{
+                        ""
+                    }
+
+                    var overviewString = ""
+                    val overview = array.get(i).asJsonObject.get("overview")
+                    overviewString = if (!overview.isJsonNull){
+                        overview.asString
+                    }else{
+                        ""
+                    }
+
                     val backDrop = array.get(i).asJsonObject.get("backdrop_path")
                     var backDropString = ""
                     backDropString = if (!backDrop.isJsonNull) {
@@ -249,17 +279,203 @@ class MainActivity : ComponentActivity() {
                     } else {
                         ""
                     }
-                    val posterPath = array.get(i).asJsonObject.get("poster_path").asString ?: ""
+
+                    var posterPathString = ""
+                    val posterPath = array.get(i).asJsonObject.get("poster_path")
+                    posterPathString =  if (!posterPath.isJsonNull){
+                        posterPath.asString
+                    }else{
+                        ""
+                    }
+
+
+//                    if (releaseString == ""){
+//
+//                    }
+//                    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+//                    val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+//
+//                    val date = inputFormat.parse(releaseString)
+//                    val formattedDate = outputFormat.format(date as Date)
+
+                    val movie = Movies(title = titleString, score = scoreString, release_date = releaseString, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
+                    moviesList.add(movie)
+
+                }
+                onSuccess(moviesList)
+            }
+
+        })
+    }
+
+    fun getPopularApi(
+        page: Int,
+        mainTransport: MainTransport,
+        context: Context,
+        TAG: String,
+        stringFeature: MutableList<Movies>,
+        onSuccess: (Boolean) -> Unit
+    ) {
+        mainTransport.getPupularFilm(context,page,object : IonMaster.IonCallback {
+            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+                Log.i(TAG, "onReadyCallback E : $errorMessage")
+                Log.i(TAG, "onReadyCallback R : $`object`")
+
+                val result = `object` as JsonObject
+                val array = result.asJsonObject.get("results").asJsonArray
+
+                for (i in 0 until array.size()) {
+                    var titleString = ""
+                    val title = array.get(i).asJsonObject.get("title")
+                    titleString = if (!title.isJsonNull){
+                        title.asString
+                    }else{
+                        ""
+                    }
+
+                    var scoreString = ""
+                    val score = array.get(i).asJsonObject.get("vote_average")
+                    scoreString =  if (!score.isJsonNull){
+                        score.asString
+                    }else{
+                        ""
+                    }
+
+                    var releaseString = ""
+                    val releaseDate = array.get(i).asJsonObject.get("release_date")
+                    releaseString =  if (!releaseDate.isJsonNull){
+                        releaseDate.asString
+                    }else{
+                        ""
+                    }
+
+                    var overviewString = ""
+                    val overview = array.get(i).asJsonObject.get("overview")
+                    overviewString = if (!overview.isJsonNull){
+                        overview.asString
+                    }else{
+                        ""
+                    }
+
+                    val backDrop = array.get(i).asJsonObject.get("backdrop_path")
+                    var backDropString = ""
+                    backDropString = if (!backDrop.isJsonNull) {
+                        backDrop.asString
+                    } else {
+                        ""
+                    }
+
+                    var posterPathString = ""
+                    val posterPath = array.get(i).asJsonObject.get("poster_path")
+                    posterPathString =  if (!posterPath.isJsonNull){
+                        posterPath.asString
+                    }else{
+                        ""
+                    }
+
+                    var stringRelease = ""
+
+                    stringRelease = if (releaseString == ""){
+                        ""
+                    }else{
+                        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+
+                        val date = inputFormat.parse(releaseString)
+                        outputFormat.format(date as Date)
+
+                    }
+
+
+
+                    val movie = Movies(title = titleString, score = scoreString, release_date = stringRelease, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
+                    stringFeature.add(movie)
+                    if(i != array.size() -1){
+                        onSuccess(true)
+                    }
+                }
+            }
+
+        })
+    }
+
+    fun getComingSoonApi(
+        page: Int,
+        mainTransport: MainTransport,
+        context: Context,
+        TAG: String,
+        onSuccess: (MutableList<Movies>) -> Unit
+    ) {
+        mainTransport.getComingSoonFilm(context,page,object : IonMaster.IonCallback {
+            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
+                Log.i(TAG, "onReadyCallback E : $errorMessage")
+                Log.i(TAG, "onReadyCallback R : $`object`")
+                val stringFeature: MutableList<Movies> = mutableListOf()
+
+
+                val result = `object` as JsonObject
+                val array = result.asJsonObject.get("results").asJsonArray
+
+                for (i in 0 until array.size()) {
+                    var titleString = ""
+                    val title = array.get(i).asJsonObject.get("title")
+                    titleString = if (!title.isJsonNull){
+                        title.asString
+                    }else{
+                        ""
+                    }
+
+                    var scoreString = ""
+                    val score = array.get(i).asJsonObject.get("vote_average")
+                    scoreString =  if (!score.isJsonNull){
+                        score.asString
+                    }else{
+                        ""
+                    }
+
+                    var releaseString = ""
+                    val releaseDate = array.get(i).asJsonObject.get("release_date")
+                    releaseString =  if (!releaseDate.isJsonNull){
+                        releaseDate.asString
+                    }else{
+                        ""
+                    }
+
+                    var overviewString = ""
+                    val overview = array.get(i).asJsonObject.get("overview")
+                    overviewString = if (!overview.isJsonNull){
+                        overview.asString
+                    }else{
+                        ""
+                    }
+
+                    val backDrop = array.get(i).asJsonObject.get("backdrop_path")
+                    var backDropString = ""
+                    backDropString = if (!backDrop.isJsonNull) {
+                        backDrop.asString
+                    } else {
+                        ""
+                    }
+
+                    var posterPathString = ""
+                    val posterPath = array.get(i).asJsonObject.get("poster_path")
+                    posterPathString =  if (!posterPath.isJsonNull){
+                        posterPath.asString
+                    }else{
+                        ""
+                    }
+
 
                     val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
 
-                    val date = inputFormat.parse(releaseDate)
+                    val date = inputFormat.parse(releaseString)
                     val formattedDate = outputFormat.format(date as Date)
 
-                    val movie = Movies(title = title, score = score, release_date = formattedDate, overview = overview, backDrop = backDropString, posterPath = posterPath)
+                    val movie = Movies(title = titleString, score = scoreString, release_date = formattedDate, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
                     stringFeature.add(movie)
                 }
+                onSuccess(stringFeature)
             }
 
         })

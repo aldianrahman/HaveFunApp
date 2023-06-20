@@ -4,6 +4,7 @@ package com.example.havefunapp.screen
 
 import android.content.Context
 import android.content.SharedPreferences.Editor
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,12 +33,17 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,11 +61,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import coil.ImageLoader
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
@@ -81,6 +93,7 @@ import com.example.havefunapp.util.Feature
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.standardQuadFromTo
+import com.google.gson.annotations.Until
 
 
 @Composable
@@ -88,25 +101,32 @@ fun HomeScreen(
     context: Context,
     editor: Editor,
     salam: String,
-    harapan: String,
+    hope: String,
     date: String,
     data: String,
     email: String,
     stringButton: List<String>,
-    stringFeature: MutableList<Movies>,
+    dataDefault: MutableList<Movies>,
     navController: NavHostController
 ){
+    val mainActivity = MainActivity()
+    val mainTransport = MainTransport()
+    var stringFeature : MutableList<Movies> = dataDefault
+    var stringFeatureSearch: MutableList<Movies> = mutableListOf()
+
+
     val onBack = {
         Util.toastToText(
             context,
             "Tekan tombol 'Back' sekali lagi untuk menutup aplikasi"
         )
     }
-    val mainActivity = MainActivity()
-    val mainTransport = MainTransport()
+
     val featureSection: MutableList<Feature> = mutableListOf()
+    val featureSections: MutableList<Feature> = mutableListOf()
 
     var lastItemVisible by remember { mutableStateOf(false) }
+    var loadingGetAPI by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf(2) }
 
 
@@ -143,49 +163,22 @@ fun HomeScreen(
     var onChipIndex by remember {
         mutableStateOf(0)
     }
-
-    if (lastItemVisible){
-        for (i in stringFeature.indices) {
-
-            val lightColorIndex = i % colorListLight.size
-            val mediumColorIndex = i % colorListMedium.size
-            val darkColorIndex = i % colorListDark.size
-
-            val feature = Feature(
-                title = stringFeature[i].title,
-                score = stringFeature[i].score,
-                release_date = stringFeature[i].release_date,
-                overview = stringFeature[i].overview,
-                backDrop = stringFeature[i].backDrop,
-                posterPath = stringFeature[i].posterPath,
-                iconId = R.drawable.ic_videocam,
-                lightColor = Color(lightColorIndex),
-                mediumColor = Color(mediumColorIndex),
-                darkColor = Color(darkColorIndex)
-            )
-            featureSection.add(feature)
-        }
-    }else{
-        for (i in stringFeature.indices) {
-            val lightColorIndex = i % colorListLight.size
-            val mediumColorIndex = i % colorListMedium.size
-            val darkColorIndex = i % colorListDark.size
-
-            val feature = Feature(
-                title = stringFeature[i].title,
-                score = stringFeature[i].score,
-                release_date = stringFeature[i].release_date,
-                overview = stringFeature[i].overview,
-                backDrop = stringFeature[i].backDrop,
-                posterPath = stringFeature[i].posterPath,
-                iconId = R.drawable.ic_videocam,
-                lightColor = Color(colorListLight[lightColorIndex].value),
-                mediumColor = Color(colorListMedium[mediumColorIndex].value),
-                darkColor = Color(colorListDark[darkColorIndex].value)
-            )
-            featureSection.add(feature)
-        }
+    var loadData by remember {
+        mutableStateOf(true)
     }
+
+    if (onChipIndex == 0){
+        if (lastItemVisible){
+            setData(stringFeature,colorListLight,colorListMedium,colorListDark,featureSection)
+        }else{
+            setData(stringFeature,colorListLight,colorListMedium,colorListDark,featureSection)
+        }
+    }else {
+        Util.toastToText(context,""+onChipIndex)
+    }
+
+
+
 
 
     mainActivity.BackPressHandler(onBackPressed = onBack)
@@ -195,7 +188,17 @@ fun HomeScreen(
             .fillMaxSize()
     ){
         Column {
-            GreetingSection(salam,harapan,date)
+            GreetingSection(salam,hope,date){searchText->
+//                Util.toastToText(context,searchText)
+
+                mainActivity.searchQueryFilm(searchText,mainTransport,context, onLoad = {load->
+                    loadData = !load
+                }){movie->
+                    for(i in 0 until movie.size ){
+                        Util.toastToText(context,""+movie[i].title)
+                    }
+                }
+            }
             ChipSection(chips = stringButton){selectIndex ->
                 onChipIndex = selectIndex
             }
@@ -223,13 +226,54 @@ fun HomeScreen(
 
             lastItemVisible = false
 
-            mainActivity.getPopularApi(page++,mainTransport,context,"Halaman 2 ",stringFeature)
+            mainActivity.getPopularApi(page++,mainTransport,context,"Halaman 2 ",stringFeature){bool ->
+                loadingGetAPI = bool
+            }
 
+        }
+        if (loadingGetAPI){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { /* Tidak melakukan apa-apa saat di klik */ },
+                contentAlignment = Alignment.Center
+            ) {
+                loadingGetAPI = false
+                CircularProgressIndicator()
+            }
         }
     }
 }
 
+fun setData(
+    stringFeature: MutableList<Movies>,
+    colorListLight: List<ColorModelLight>,
+    colorListMedium: List<ColorModelMedium>,
+    colorListDark: List<ColorModelDark>,
+    featureSection: MutableList<Feature>
+) {
+    for (i in stringFeature.indices) {
 
+        val lightColorIndex = i % colorListLight.size
+        val mediumColorIndex = i % colorListMedium.size
+        val darkColorIndex = i % colorListDark.size
+
+        val feature = Feature(
+            title = stringFeature[i].title,
+            score = stringFeature[i].score,
+            release_date = stringFeature[i].release_date,
+            overview = stringFeature[i].overview,
+            backDrop = stringFeature[i].backDrop,
+            posterPath = stringFeature[i].posterPath,
+            iconId = R.drawable.ic_videocam,
+            lightColor = Color(colorListLight[lightColorIndex].value),
+            mediumColor = Color(colorListMedium[mediumColorIndex].value),
+            darkColor = Color(colorListDark[darkColorIndex].value)
+        )
+        featureSection.add(feature)
+    }
+}
 
 
 @Composable
@@ -245,6 +289,7 @@ fun BottomMenu(
     var selectedItemIndex by remember {
         mutableStateOf(initialSelectedItemIndex)
     }
+    val context = LocalContext.current
     Row(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
@@ -261,10 +306,12 @@ fun BottomMenu(
                 activeTextColor = activeTextColor,
                 inactiveTextColor = inactiveTextColor
             ) {
-                selectedItemIndex = index
-                if (selectedItemIndex == 0){
-                    navController?.navigate(ScreenRoute.HomeScreen.route)
-                }
+//                selectedItemIndex = index
+//                if (selectedItemIndex == 0){
+//                    navController?.navigate(ScreenRoute.HomeScreen.route)
+//                }else{
+//                    Util.toastToText(context, "Clicked : $selectedItemIndex")
+//                }
 //                else if (selectedItemIndex == 1){
 //                    navController?.navigate(ScreenRoute.SecondScreen.withArgs(selectedItemIndex.toString()))
 //                }
@@ -310,12 +357,18 @@ fun BottomMenuItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GreetingSection(
     greeting: String,
     wish: String,
-    date: String
+    date: String,
+    onSearchAPI:(String) -> Unit
 ){
+    var searchClick by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -323,33 +376,87 @@ fun GreetingSection(
             .fillMaxWidth()
             .padding(vertical = 15.dp, horizontal = 15.dp)
     ){
-        Column(
-            verticalArrangement = Arrangement.Center,
+        if (searchClick){
+            TextField(
+                value = searchText,
+                onValueChange = {newSearch->
+                    searchText = newSearch
+                },
+                placeholder = { Text(text = "Search...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(horizontal = 16.dp),
+                singleLine = true,
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                textStyle = TextStyle(color = Color.Black),
+                trailingIcon = {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Close Search",
+                            tint = Color.Blue,
+                            modifier = Modifier.padding(end = 8.dp)
+                                .clickable {
+                                if (searchText.length > 3){
+                                    onSearchAPI(searchText)
+                                }else{
+                                    Util.toastToText(context,"Minimal 3 Karakter")
+                                }
+                            }
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Close Search",
+                            tint = Color.Red,
+                            modifier = Modifier.padding(end = 8.dp)
+                                .clickable {
+                                searchText = ""
+                                searchClick = false
+                            }
+                        )
+                    }
+                }
+            )
+        }else{
+            Column(
+                verticalArrangement = Arrangement.Center,
 
-            ) {
-            Text(
-                date,
-                style = MaterialTheme.typography.bodySmall,
-                color = TextWhite
-            )
-            Text(
-                greeting,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(
-                wish,
-                style = MaterialTheme.typography.bodyLarge
-            )
+                ) {
+                Text(
+                    date,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextWhite
+                )
+                Text(
+                    greeting,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(
+                    wish,
+                    style = MaterialTheme.typography.bodyLarge
+                )
 
+            }
         }
         Icon(
             painter = painterResource(R.drawable.ic_search),
-            contentDescription ="Search",
+            contentDescription = "Search",
             tint = Color.White,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { searchClick = true }
         )
+
+
     }
 }
+
+
 
 @Composable
 fun ChipSection(
@@ -644,8 +751,7 @@ fun FratureItem(
                 .fillMaxSize()
                 .padding(15.dp)
         ){
-            Column(
-            ) {
+            Column {
                 Text(
                     text = feature.title,
                     style = MaterialTheme.typography.headlineMedium.copy(
@@ -753,6 +859,9 @@ fun FratureItem(
         }
     }
 }
+
+
+
 @Composable
 fun clickDetail(overview: String, backdrop: String, posterPath: String) {
     val itemsList = (1)
@@ -786,19 +895,61 @@ fun clickDetail(overview: String, backdrop: String, posterPath: String) {
     }
 }
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ImageViewByUrl(url: String) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader(context)
+
     val painter = rememberImagePainter(
-        data = url
-//        builder = {
-//            transformations(CircleCropTransformation())
-//        }
+        data = url,
+        imageLoader = imageLoader,
+        builder = {
+            crossfade(true)
+//            placeholder(R.drawable.loading_placeholder)
+//            error(R.drawable.error_placeholder)
+        }
     )
 
-    Image(
-        painter = painter,
-        contentDescription = null, // Optional content description
-        contentScale = ContentScale.Fit,
-        modifier = Modifier.size(300.dp)
-    )
+    var isFullScreen by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.size(300.dp).clickable {
+        isFullScreen = true
+    }) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        if (painter.state is ImagePainter.State.Loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.White
+            )
+        }
+    }
+    if (isFullScreen) {
+        FullScreenImageDialog(
+            imageUrl = url,
+            onDismiss = { isFullScreen = false }
+        )
+    }
+}
+
+@Composable
+fun FullScreenImageDialog(imageUrl: String, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    Dialog(onDismissRequest = onDismiss) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = rememberImagePainter(imageUrl),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+                    .clickable { onDismiss.invoke() }
+            )
+        }
+    }
 }
