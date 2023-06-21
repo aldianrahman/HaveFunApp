@@ -7,6 +7,9 @@ import android.widget.Toast
 class Util {
 
     companion object {
+        val popular: String = "pupular"
+        val topRated: String = "top_rated"
+        val upComing: String = "upcoming"
         val NamePref: String? = "pref"
         const val appName: String = "Have Fun App"
         val RememberME: String? = "remember_me"
@@ -53,15 +56,23 @@ class Util {
         }
 
         fun getFilm(
+            type: String,
             i: Int,
             query: String?
         ): String {
             var url =""
-            url = if (i != 0){
-                "https://api.themoviedb.org/3/discover/movie?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
-            }else{
-                "https://api.themoviedb.org/3/search/movie?api_key=b8344cb11b1112f5b64098c48b4e1b7d&query=$query"
+            if (type == popular && i != 0){
+                url = "https://api.themoviedb.org/3/movie/popular?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
+            }else if(type == topRated) run {
+                url = "https://api.themoviedb.org/3/movie/top_rated?api_key=b8344cb11b1112f5b64098c48b4e1b7d&page=$i"
+            }else if(type == Util.upComing){
+
             }
+            else{
+                url = "https://api.themoviedb.org/3/search/movie?api_key=b8344cb11b1112f5b64098c48b4e1b7d&query=$query"
+            }
+
+
 
             return url
         }

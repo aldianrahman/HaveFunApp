@@ -74,16 +74,30 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
 
                 val stringButton = mutableListOf<String>()
-                stringButton.add("Top Film")
-                stringButton.add("Top Music")
-                stringButton.add("Top News")
+                stringButton.add("Popular")
+                stringButton.add("Top Rated")
+                stringButton.add("Up Coming")
 
                 val TAG = "JSON_MONGODB"
                 val mainTransport = MainTransport()
-                val stringFeature = mutableListOf<Movies>()
+                val popularData = mutableListOf<Movies>()
+                val topRatedData = mutableListOf<Movies>()
+                val upComingData = mutableListOf<Movies>()
 
-                getPopularApi(1,mainTransport,context,TAG,stringFeature){bool->
-//                    Util.toastToText(context,bool.toString())
+                getDataApi(Util.popular,1,null,mainTransport,context,TAG,popularData,
+                onSuccess = {bool->
+
+                }
+                    ){data->
+
+                }
+
+                getDataApi(Util.topRated,1,null,mainTransport,context,TAG,topRatedData,
+                    onSuccess = {bool->
+
+                    }
+                ){data->
+
                 }
 
 
@@ -188,7 +202,8 @@ class MainActivity : ComponentActivity() {
                                     lastLogin,
                                     email,
                                     stringButton,
-                                    stringFeature,
+                                    popularData,
+                                    topRatedData,
                                     navController)
                             }
                         }
@@ -220,103 +235,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun searchQueryFilm(
-        searchText: String,
-        mainTransport: MainTransport,
-        context: Context,
-        onLoad: (Boolean) -> Unit,
-        onSuccess: (MutableList<Movies>) -> Unit
-    ) {
-
-        mainTransport.searchFilm(context,type = 0,searchText,object : IonMaster.IonCallback {
-            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
-                val TAG = "Search API"
-                Log.i(TAG, "onReadyCallback E : $errorMessage")
-                Log.i(TAG, "onReadyCallback R : $`object`")
-
-                val result = `object` as JsonObject
-                val array = result.asJsonObject.get("results").asJsonArray
-                val moviesList: MutableList<Movies> = mutableListOf()
 
 
-                for (i in 0 until array.size()) {
-                    var titleString = ""
-                    val title = array.get(i).asJsonObject.get("title")
-                    titleString = if (!title.isJsonNull){
-                        title.asString
-                    }else{
-                        ""
-                    }
-
-                    var scoreString = ""
-                    val score = array.get(i).asJsonObject.get("vote_average")
-                    scoreString =  if (!score.isJsonNull){
-                        score.asString
-                    }else{
-                        ""
-                    }
-
-                    var releaseString = ""
-                    val releaseDate = array.get(i).asJsonObject.get("release_date")
-                    releaseString =  if (!releaseDate.isJsonNull){
-                        releaseDate.asString
-                    }else{
-                        ""
-                    }
-
-                    var overviewString = ""
-                    val overview = array.get(i).asJsonObject.get("overview")
-                    overviewString = if (!overview.isJsonNull){
-                        overview.asString
-                    }else{
-                        ""
-                    }
-
-                    val backDrop = array.get(i).asJsonObject.get("backdrop_path")
-                    var backDropString = ""
-                    backDropString = if (!backDrop.isJsonNull) {
-                        backDrop.asString
-                    } else {
-                        ""
-                    }
-
-                    var posterPathString = ""
-                    val posterPath = array.get(i).asJsonObject.get("poster_path")
-                    posterPathString =  if (!posterPath.isJsonNull){
-                        posterPath.asString
-                    }else{
-                        ""
-                    }
-
-
-//                    if (releaseString == ""){
-//
-//                    }
-//                    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-//                    val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
-//
-//                    val date = inputFormat.parse(releaseString)
-//                    val formattedDate = outputFormat.format(date as Date)
-
-                    val movie = Movies(title = titleString, score = scoreString, release_date = releaseString, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
-                    moviesList.add(movie)
-
-                }
-                onSuccess(moviesList)
-            }
-
-        })
-    }
-
-    fun getPopularApi(
+    fun getDataApi(
+        type:String,
         page: Int,
+        query: String?,
         mainTransport: MainTransport,
         context: Context,
         TAG: String,
         stringFeature: MutableList<Movies>,
-        onSuccess: (Boolean) -> Unit
+        onSuccess: (Boolean) -> Unit,
+        sendData:(MutableList<Movies>) -> Unit
     ) {
-        mainTransport.getPupularFilm(context,page,object : IonMaster.IonCallback {
+        mainTransport.getPupularFilm(context,type,page,query,object : IonMaster.IonCallback {
             override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
                 Log.i(TAG, "onReadyCallback E : $errorMessage")
                 Log.i(TAG, "onReadyCallback R : $`object`")
@@ -393,93 +325,14 @@ class MainActivity : ComponentActivity() {
                     if(i != array.size() -1){
                         onSuccess(true)
                     }
+                    sendData(stringFeature)
                 }
             }
 
         })
     }
 
-    fun getComingSoonApi(
-        page: Int,
-        mainTransport: MainTransport,
-        context: Context,
-        TAG: String,
-        onSuccess: (MutableList<Movies>) -> Unit
-    ) {
-        mainTransport.getComingSoonFilm(context,page,object : IonMaster.IonCallback {
-            override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
-                Log.i(TAG, "onReadyCallback E : $errorMessage")
-                Log.i(TAG, "onReadyCallback R : $`object`")
-                val stringFeature: MutableList<Movies> = mutableListOf()
 
-
-                val result = `object` as JsonObject
-                val array = result.asJsonObject.get("results").asJsonArray
-
-                for (i in 0 until array.size()) {
-                    var titleString = ""
-                    val title = array.get(i).asJsonObject.get("title")
-                    titleString = if (!title.isJsonNull){
-                        title.asString
-                    }else{
-                        ""
-                    }
-
-                    var scoreString = ""
-                    val score = array.get(i).asJsonObject.get("vote_average")
-                    scoreString =  if (!score.isJsonNull){
-                        score.asString
-                    }else{
-                        ""
-                    }
-
-                    var releaseString = ""
-                    val releaseDate = array.get(i).asJsonObject.get("release_date")
-                    releaseString =  if (!releaseDate.isJsonNull){
-                        releaseDate.asString
-                    }else{
-                        ""
-                    }
-
-                    var overviewString = ""
-                    val overview = array.get(i).asJsonObject.get("overview")
-                    overviewString = if (!overview.isJsonNull){
-                        overview.asString
-                    }else{
-                        ""
-                    }
-
-                    val backDrop = array.get(i).asJsonObject.get("backdrop_path")
-                    var backDropString = ""
-                    backDropString = if (!backDrop.isJsonNull) {
-                        backDrop.asString
-                    } else {
-                        ""
-                    }
-
-                    var posterPathString = ""
-                    val posterPath = array.get(i).asJsonObject.get("poster_path")
-                    posterPathString =  if (!posterPath.isJsonNull){
-                        posterPath.asString
-                    }else{
-                        ""
-                    }
-
-
-                    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
-
-                    val date = inputFormat.parse(releaseString)
-                    val formattedDate = outputFormat.format(date as Date)
-
-                    val movie = Movies(title = titleString, score = scoreString, release_date = formattedDate, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
-                    stringFeature.add(movie)
-                }
-                onSuccess(stringFeature)
-            }
-
-        })
-    }
 
     @Composable
     fun refeshDB(context: Context, db: UserDao) {

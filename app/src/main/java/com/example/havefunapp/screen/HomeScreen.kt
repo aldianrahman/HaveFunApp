@@ -2,9 +2,9 @@
 
 package com.example.havefunapp.screen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences.Editor
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -93,9 +93,10 @@ import com.example.havefunapp.util.Feature
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.standardQuadFromTo
-import com.google.gson.annotations.Until
+import kotlinx.coroutines.launch
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun HomeScreen(
     context: Context,
@@ -107,12 +108,25 @@ fun HomeScreen(
     email: String,
     stringButton: List<String>,
     dataDefault: MutableList<Movies>,
+    topRatedData: MutableList<Movies>,
     navController: NavHostController
 ){
+    var searchTexts by remember { mutableStateOf("") }
     val mainActivity = MainActivity()
     val mainTransport = MainTransport()
-    var stringFeature : MutableList<Movies> = dataDefault
-    var stringFeatureSearch: MutableList<Movies> = mutableListOf()
+    var popular : MutableList<Movies> = dataDefault
+    var topRated : MutableList<Movies> = mutableListOf()
+    var loadDataSearch by remember { mutableStateOf(false) }
+
+
+
+
+//    if (searchTexts != ""&&searchTexts.length > 3 && loadDataSearch) run {
+//        stringFeature = dataDefault.subList(10,20)
+//    } else{
+//        stringFeature = dataDefault
+//    }
+
 
 
     val onBack = {
@@ -168,13 +182,19 @@ fun HomeScreen(
     }
 
     if (onChipIndex == 0){
+        popular = dataDefault
         if (lastItemVisible){
-            setData(stringFeature,colorListLight,colorListMedium,colorListDark,featureSection)
+            setData(popular,colorListLight,colorListMedium,colorListDark,featureSection)
         }else{
-            setData(stringFeature,colorListLight,colorListMedium,colorListDark,featureSection)
+            setData(popular,colorListLight,colorListMedium,colorListDark,featureSection)
         }
-    }else {
-        Util.toastToText(context,""+onChipIndex)
+    }else if (onChipIndex == 1) {
+        topRated = topRatedData
+        if (lastItemVisible){
+            setData(topRated,colorListLight,colorListMedium,colorListDark,featureSection)
+        }else{
+            setData(topRated,colorListLight,colorListMedium,colorListDark,featureSection)
+        }
     }
 
 
@@ -189,15 +209,7 @@ fun HomeScreen(
     ){
         Column {
             GreetingSection(salam,hope,date){searchText->
-//                Util.toastToText(context,searchText)
-
-                mainActivity.searchQueryFilm(searchText,mainTransport,context, onLoad = {load->
-                    loadData = !load
-                }){movie->
-                    for(i in 0 until movie.size ){
-                        Util.toastToText(context,""+movie[i].title)
-                    }
-                }
+                searchTexts = searchText
             }
             ChipSection(chips = stringButton){selectIndex ->
                 onChipIndex = selectIndex
@@ -226,9 +238,23 @@ fun HomeScreen(
 
             lastItemVisible = false
 
-            mainActivity.getPopularApi(page++,mainTransport,context,"Halaman 2 ",stringFeature){bool ->
-                loadingGetAPI = bool
+            if(onChipIndex ==0){
+                mainActivity.getDataApi(Util.popular,page++,null,mainTransport,context,"Halaman 2 ",popular,
+                    onSuccess = {bool->
+                        loadingGetAPI = bool
+                    }){
+
+                }
+            }else if(onChipIndex ==1){
+                mainActivity.getDataApi(Util.topRated,page++,null,mainTransport,context,"Halaman 2 ",topRated,
+                    onSuccess = {bool->
+                        loadingGetAPI = bool
+                    }){
+
+                }
             }
+
+
 
         }
         if (loadingGetAPI){
@@ -239,8 +265,20 @@ fun HomeScreen(
                     .clickable { /* Tidak melakukan apa-apa saat di klik */ },
                 contentAlignment = Alignment.Center
             ) {
-                loadingGetAPI = false
-                CircularProgressIndicator()
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        color = TextWhite
+                    )
+                    Text("Sedang memuat data...")
+                }
+                kotlinx.coroutines.GlobalScope.launch {
+                    kotlinx.coroutines.delay(2000)
+                    loadingGetAPI = false
+                    // Langkah 4: Kode setelah delay
+                    // Kode yang ingin dieksekusi setelah delay dapat ditempatkan di sini
+                }
             }
         }
     }
@@ -415,7 +453,8 @@ fun GreetingSection(
                             tint = Color.Red,
                             modifier = Modifier.padding(end = 8.dp)
                                 .clickable {
-                                searchText = ""
+                                    searchText =  ""
+                                    onSearchAPI("")
                                 searchClick = false
                             }
                         )
