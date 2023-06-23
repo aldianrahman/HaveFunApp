@@ -6,4 +6,8 @@
     <string name="logout_message">Apakah anda ingin Logout?</string>
     <string name="yes">Yes</string>
     <string name="cancel">Cancel</string>
+    <string name="input_transaksi_text">Input Transaksi</string>
+    <string name="nama_transaksi_text">Nama Transaksi</string>
+    <string name="jumlah_transaksi_text">Jumlah Transaksi</string>
+    <string name="pilih_jenis_transaksi_text">Pilih Jenis Transaksi</string>
 </resources>

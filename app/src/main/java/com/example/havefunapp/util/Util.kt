@@ -9,7 +9,8 @@ class Util {
     companion object {
         val popular: String = "pupular"
         val topRated: String = "top_rated"
-        val upComing: String = "upcoming"
+        val upComing: String = "up_coming"
+        val nowPlaying: String = "now_playing"
         val NamePref: String? = "pref"
         const val appName: String = "Have Fun App"
         val RememberME: String? = "remember_me"
@@ -65,8 +66,11 @@ class Util {
                 url = "https://api.themoviedb.org/3/movie/popular?api_key=8af32cafa0a61c0821df743b90b4d56e&page=$i"
             }else if(type == topRated) run {
                 url = "https://api.themoviedb.org/3/movie/top_rated?api_key=b8344cb11b1112f5b64098c48b4e1b7d&page=$i"
-            }else if(type == Util.upComing){
-
+            }else if(type == upComing){
+                url ="https://api.themoviedb.org/3/movie/upcoming?api_key=b8344cb11b1112f5b64098c48b4e1b7d&page=$i"
+            }
+            else if(type == nowPlaying){
+                url ="https://api.themoviedb.org/3//movie/now_playing?api_key=b8344cb11b1112f5b64098c48b4e1b7d&page=$i"
             }
             else{
                 url = "https://api.themoviedb.org/3/search/movie?api_key=b8344cb11b1112f5b64098c48b4e1b7d&query=$query"

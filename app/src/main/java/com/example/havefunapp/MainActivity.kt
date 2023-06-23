@@ -32,6 +32,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.havefunapp.model.Movies
 import com.example.havefunapp.screen.HomeScreen
+import com.example.havefunapp.screen.MobileMovieScreen
 import com.example.havefunapp.screen.SecondScreen
 
 
@@ -65,10 +66,6 @@ class MainActivity : ComponentActivity() {
             val editor = sharedPreferences.edit()
             val isLogin = sharedPreferences.getBoolean(Util.RememberME,false)
 
-
-
-
-
             MeditationUIYouTubeTheme{
 
                 val context = LocalContext.current
@@ -83,6 +80,7 @@ class MainActivity : ComponentActivity() {
                 val popularData = mutableListOf<Movies>()
                 val topRatedData = mutableListOf<Movies>()
                 val upComingData = mutableListOf<Movies>()
+                val nowPlayingData = mutableListOf<Movies>()
 
                 getDataApi(Util.popular,1,null,mainTransport,context,TAG,popularData,
                 onSuccess = {bool->
@@ -93,6 +91,22 @@ class MainActivity : ComponentActivity() {
                 }
 
                 getDataApi(Util.topRated,1,null,mainTransport,context,TAG,topRatedData,
+                    onSuccess = {bool->
+
+                    }
+                ){data->
+
+                }
+
+                getDataApi(Util.upComing,1,null,mainTransport,context,TAG,upComingData,
+                    onSuccess = {bool->
+
+                    }
+                ){data->
+
+                }
+
+                getDataApi(Util.nowPlaying,1,null,mainTransport,context,TAG,nowPlayingData,
                     onSuccess = {bool->
 
                     }
@@ -158,7 +172,7 @@ class MainActivity : ComponentActivity() {
                         SplashScreen(context) {
 
                             toGo = if (isLogin){
-                                ScreenRoute.HomeScreen.route
+                                ScreenRoute.CashFlowManager.route
                             }else{
                                 ScreenRoute.SignupScreen.route
                             }
@@ -176,6 +190,10 @@ class MainActivity : ComponentActivity() {
                     composable(ScreenRoute.LoginScreen.route){
                         refeshDB(context,db)
                         loginScreen(context,editor,db,navController)
+                    }
+
+                    composable(ScreenRoute.CashFlowManager.route){
+                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData)
                     }
 
                     composable(ScreenRoute.HomeScreen.route){
