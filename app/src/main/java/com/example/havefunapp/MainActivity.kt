@@ -193,7 +193,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(ScreenRoute.CashFlowManager.route){
-                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData)
+                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData,editor,navController)
                     }
 
                     composable(ScreenRoute.HomeScreen.route){

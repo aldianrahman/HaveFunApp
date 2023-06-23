@@ -1,6 +1,7 @@
 package com.example.havefunapp.screen
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,10 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,17 +53,17 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
-import com.example.havefunapp.R
 import com.example.havefunapp.model.Movies
 import com.example.havefunapp.ui.theme.OrangeYellow1
 import com.example.havefunapp.ui.theme.OrangeYellow2
 import com.example.havefunapp.ui.theme.OrangeYellow3
 import com.example.havefunapp.ui.theme.TextWhite
-import com.example.havefunapp.util.Util
+import com.example.havefunapp.util.ScreenRoute
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -79,7 +75,9 @@ fun MobileMovieScreen(
     popularList: MutableList<Movies>,
     topRatedData: MutableList<Movies>,
     upComingData: MutableList<Movies>,
-    nowPlayingData: MutableList<Movies>
+    nowPlayingData: MutableList<Movies>,
+    editor: SharedPreferences.Editor,
+    navController: NavHostController
 ) {
 
     val gradientColors = listOf(
@@ -116,7 +114,9 @@ fun MobileMovieScreen(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButtonSearch(primaryColor,buttonSize = 35.dp, imageVector = Icons.Default.Person){
-
+                            editor?.clear()
+                            editor?.apply()
+                            navController?.navigate(ScreenRoute.SplashScreen.route)
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                     }
