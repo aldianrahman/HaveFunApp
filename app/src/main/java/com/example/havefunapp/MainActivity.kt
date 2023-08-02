@@ -3,10 +3,14 @@ package com.example.havefunapp
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -27,6 +31,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.havefunapp.dao.UserDao
 import com.example.havefunapp.db.AppDatabase
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -55,6 +61,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.concurrent.thread
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -169,10 +176,12 @@ class MainActivity : ComponentActivity() {
 
                     composable(ScreenRoute.SplashScreen.route) {
                         refeshDB(context,db)
-                        SplashScreen(context) {
+                        SplashScreen(context, exitToApp = {
+                            if (it)finish()
+                        }) {
 
                             toGo = if (isLogin){
-                                ScreenRoute.CashFlowManager.route
+                                ScreenRoute.HomeScreen.route
                             }else{
                                 ScreenRoute.SignupScreen.route
                             }
@@ -184,16 +193,22 @@ class MainActivity : ComponentActivity() {
 
                     composable(ScreenRoute.SignupScreen.route){
                         refeshDB(context,db)
-                        signupScreen(context,navController,db)
+                        signupScreen(context,navController,db){
+                            if (it) finish()
+                        }
                     }
 
                     composable(ScreenRoute.LoginScreen.route){
                         refeshDB(context,db)
-                        loginScreen(context,editor,db,navController)
+                        loginScreen(context,editor,db,navController){
+                            if (it) finish()
+                        }
                     }
 
                     composable(ScreenRoute.CashFlowManager.route){
-                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData,editor,navController)
+                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData,editor,navController){
+                            if (it)finish()
+                        }
                     }
 
                     composable(ScreenRoute.HomeScreen.route){
@@ -222,7 +237,9 @@ class MainActivity : ComponentActivity() {
                                     stringButton,
                                     popularData,
                                     topRatedData,
-                                    navController)
+                                    navController,
+                                    upComingData
+                                )
                             }
                         }
                     }
@@ -266,7 +283,7 @@ class MainActivity : ComponentActivity() {
         onSuccess: (Boolean) -> Unit,
         sendData:(MutableList<Movies>) -> Unit
     ) {
-        mainTransport.getPupularFilm(context,type,page,query,object : IonMaster.IonCallback {
+        mainTransport.getData(context,type,page,query,object : IonMaster.IonCallback {
             override fun onReadyCallback(errorMessage: String?, `object`: Any?) {
                 Log.i(TAG, "onReadyCallback E : $errorMessage")
                 Log.i(TAG, "onReadyCallback R : $`object`")
@@ -275,6 +292,15 @@ class MainActivity : ComponentActivity() {
                 val array = result.asJsonObject.get("results").asJsonArray
 
                 for (i in 0 until array.size()) {
+
+                    var idString: Int
+                    val id = array.get(i).asJsonObject.get("id")
+                    idString = if (!id.isJsonNull){
+                        id.asInt
+                    }else{
+                        0
+                    }
+
                     var titleString = ""
                     val title = array.get(i).asJsonObject.get("title")
                     titleString = if (!title.isJsonNull){
@@ -338,7 +364,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-                    val movie = Movies(title = titleString, score = scoreString, release_date = stringRelease, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
+                    val movie = Movies(id = idString ,title = titleString, score = scoreString, release_date = stringRelease, overview = overviewString, backDrop = backDropString, posterPath = posterPathString)
                     stringFeature.add(movie)
                     if(i != array.size() -1){
                         onSuccess(true)
@@ -409,27 +435,30 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun BackPressHandler(
-        backPressedDispatcher: OnBackPressedDispatcher? =
-            LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
-        onBackPressed: () -> Unit
+        exitToApp:(Boolean)-> Unit
     ) {
-        val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
-
-        val backCallback = remember {
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    currentOnBackPressed()
+        val context = LocalContext.current
+        var clickExit by remember { mutableStateOf(0) }
+        BackHandler(enabled = true){
+            clickExit++
+            if (clickExit == 2){
+                exitToApp(true)
+            }else{
+                val vibrator = context?.getSystemService(VIBRATOR_SERVICE) as Vibrator
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    vibrator.vibrate(200)
+                }
+                Toast.makeText(context, "Click Back to Exit", Toast.LENGTH_SHORT).show()
+                thread {
+                    Thread.sleep(3000) // Penundaan selama 3 detik (3000 milidetik)
+                    // Kode yang akan dieksekusi setelah penundaan
+                    clickExit = 0
                 }
             }
         }
 
-        DisposableEffect(key1 = backPressedDispatcher) {
-            backPressedDispatcher?.addCallback(backCallback)
-
-            onDispose {
-                backCallback.remove()
-            }
-        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

@@ -25,9 +25,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,8 +41,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -58,12 +67,15 @@ import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
+import com.example.havefunapp.MainActivity
 import com.example.havefunapp.model.Movies
+import com.example.havefunapp.transport.MainTransport
 import com.example.havefunapp.ui.theme.OrangeYellow1
 import com.example.havefunapp.ui.theme.OrangeYellow2
 import com.example.havefunapp.ui.theme.OrangeYellow3
 import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.util.ScreenRoute
+import com.example.havefunapp.util.Util
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -72,14 +84,22 @@ import com.google.accompanist.pager.rememberPagerState
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalCoilApi::class)
 @Composable
 fun MobileMovieScreen(
-    popularList: MutableList<Movies>,
+    popularData: MutableList<Movies>,
     topRatedData: MutableList<Movies>,
     upComingData: MutableList<Movies>,
     nowPlayingData: MutableList<Movies>,
-    editor: SharedPreferences.Editor,
-    navController: NavHostController
+    editor: SharedPreferences.Editor?,
+    navController: NavHostController?,
+    exitToApp:(Boolean)->Unit
 ) {
-
+    var refreshDataPopular by remember { mutableStateOf(false) }
+    var dialogDetail by remember { mutableStateOf(false) }
+    var refreshDataTopRated by remember { mutableStateOf(false) }
+    var refreshDataUpComing by remember { mutableStateOf(false) }
+    var pagePopular by remember { mutableStateOf(2) }
+    var pageTopRated by remember { mutableStateOf(2) }
+    var pageUpComing by remember { mutableStateOf(2) }
+    var idDetail by remember { mutableStateOf(0) }
     val gradientColors = listOf(
         OrangeYellow1,
         OrangeYellow2,
@@ -87,6 +107,13 @@ fun MobileMovieScreen(
     )
     val primaryColor = Brush.linearGradient(gradientColors)
     val context = LocalContext.current
+    val mainActivity = MainActivity()
+
+    mainActivity.BackPressHandler {
+        exitToApp(it)
+    }
+
+    val mainTransport = MainTransport()
 
     Box(
         modifier = Modifier
@@ -191,7 +218,19 @@ fun MobileMovieScreen(
                         TextLeft("Popular Movie")
                         TextRight("Lihat lebih banyak")
                     }
-                    HorizontalPagerImageUrl(imageItems = popularList,context)
+                    HorizontalPagerImageUrl(imageItems = popularData,context,true, sendDataId = {id->
+                       idDetail = id
+                    }, onClick = { bool->
+                        dialogDetail = bool
+                    }){
+                        mainActivity.getDataApi(Util.popular,pagePopular++,null,mainTransport,context,"Get_Popular_On_Last_Item $pagePopular",popularData,
+                            onSuccess = {bool->
+                                refreshDataPopular = bool
+                            }
+                        ){data->
+
+                    }
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -201,7 +240,19 @@ fun MobileMovieScreen(
                         TextLeft("Top Rated")
                         TextRight("Lihat lebih banyak")
                     }
-                    HorizontalPagerImageUrl(imageItems = topRatedData,context)
+                    HorizontalPagerImageUrl(imageItems = topRatedData,context,true, sendDataId = {id->
+                        idDetail = id
+                    }, onClick = {bool->
+                        dialogDetail = bool
+                    }){
+                        mainActivity.getDataApi(Util.popular,pageTopRated++,null,mainTransport,context,"Get_Top_Rated_On_Last_Item $pageTopRated",topRatedData,
+                            onSuccess = {bool->
+                                refreshDataTopRated = bool
+                            }
+                        ){data->
+
+                        }
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -211,7 +262,19 @@ fun MobileMovieScreen(
                         TextLeft("Up Coming")
                         TextRight("Lihat lebih banyak")
                     }
-                    HorizontalPagerImageUrl(imageItems = upComingData,context)
+                    HorizontalPagerImageUrl(imageItems = upComingData,context,true, sendDataId = {id->
+                        idDetail = id
+                    }, onClick = {bool->
+                        dialogDetail = bool
+                    }){
+                        mainActivity.getDataApi(Util.popular,pageUpComing++,null,mainTransport,context,"Get_Up_Coming_On_Last_Item $pageUpComing",upComingData,
+                            onSuccess = {bool->
+                                refreshDataUpComing = bool
+                            }
+                        ){data->
+
+                        }
+                    }
                     Spacer(modifier = Modifier.height(32.dp))
                     Box(modifier = Modifier
                         .fillMaxWidth()
@@ -229,6 +292,90 @@ fun MobileMovieScreen(
                     }
                 }
             }
+        }
+        if (refreshDataPopular){
+            HorizontalPagerImageUrl(popularData,context,false, sendDataId = {
+
+            }, onClick = {bool->
+
+            }){
+
+            }
+        }
+        if (refreshDataTopRated){
+            HorizontalPagerImageUrl(topRatedData,context,false, sendDataId = {
+
+            }, onClick = {
+
+            }){
+
+            }
+        }
+        if (refreshDataUpComing){
+            HorizontalPagerImageUrl(upComingData,context,false, sendDataId = {
+
+            },onClick = {
+
+            }){
+
+            }
+        }
+        if (dialogDetail) {
+            AlertDialog(
+                modifier = Modifier.fillMaxSize(),
+                onDismissRequest = { dialogDetail = false },
+                title = {
+                    Text(
+                        textAlign = TextAlign.Center,
+                        text = idDetail.toString(),
+                        color = TextWhite,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 30.sp,
+                            shadow = Shadow(
+                                color = Color.Black,
+                                offset = Offset(2f,2f),
+                                blurRadius = 4f
+                            )
+                        )
+                    )
+                },
+                text = {
+                    Text("Isi")
+                },
+                confirmButton = {
+                    val mainActivity  = MainActivity()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        Button(
+                            colors = mainActivity.defaultButtonColor(),
+                            onClick = { Util.toastToText(context,"Data Tersimpan") },
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbUp,
+                                contentDescription = "ThumbUp",
+                                modifier = Modifier.size(24.dp),
+                                tint = Color.White
+                            )
+                        }
+
+                        Button(
+                            colors = mainActivity.defaultButtonColor(),
+                            onClick = { dialogDetail = false }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Close Icon",
+                                modifier = Modifier.size(24.dp),
+                                tint = Color.Red
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 }
@@ -279,7 +426,8 @@ fun TextHeaderImageSlide(s: String) {
                 offset = Offset(1f,1f),
                 blurRadius = 2f
             )
-        )
+        ),
+        textAlign = TextAlign.Center
     )
 }
 
@@ -321,18 +469,36 @@ fun IconButtonSearch( backgroundColor : Brush,buttonSize: Dp,imageVector: ImageV
 
 
 @Composable
-fun HorizontalPagerImageUrl(imageItems: MutableList<Movies>,context: Context) {
+fun HorizontalPagerImageUrl(
+    imageItems: MutableList<Movies>,
+    context: Context,
+    isVisible:Boolean,
+    sendDataId:(Int)-> Unit,
+    onClick: (Boolean) -> Unit,
+    onLastItemVisible:()->Unit,
+) {
     val lazyListState = rememberLazyListState()
 
     LazyRow(
         state = lazyListState,
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            .alpha(if (isVisible) 1f else 0f)
     ) {
-        items(imageItems.size){
-            ImageCardUrl(imageItems[it].title,imageItems[it].posterPath,context){
-
+        items(imageItems.size){index->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                ImageCardUrl(imageItems[index].title,imageItems[index].posterPath,context){bool->
+                    onClick(bool)
+                }
+                Text(imageItems[index].score, color = OrangeYellow2)
             }
+            if (index == imageItems.size - 1) {
+                onLastItemVisible()
+            }
+            sendDataId(imageItems[index].id)
         }
     }
 }
@@ -343,7 +509,7 @@ fun ImageCardUrl(
     title: String,
     imageRes: String,
     context: Context,
-    onClick: () -> Unit
+    onClick: (Boolean) -> Unit
 ) {
     val imageLoader = ImageLoader(context)
 
@@ -354,7 +520,10 @@ fun ImageCardUrl(
 
     Column(modifier = Modifier
         .padding(3.dp)
-        .size(225.dp),
+        .size(225.dp)
+        .clickable {
+        onClick(true)
+        },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
         ){
@@ -362,9 +531,7 @@ fun ImageCardUrl(
             title
         )
         Box(
-            modifier = Modifier.border(0.5.dp, OrangeYellow2).clickable {
-                onClick
-            }
+            modifier = Modifier.border(0.5.dp, OrangeYellow2)
         ){
             Image(
                 painter = painter,

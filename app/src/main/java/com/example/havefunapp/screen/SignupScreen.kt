@@ -3,6 +3,7 @@ package com.example.havefunapp.screen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.style.UnderlineSpan
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
@@ -47,6 +49,7 @@ import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
 import com.example.havefunapp.util.Util.Companion.toastToText
+import com.example.havefunapp.viewModel.UserViewModel
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -55,27 +58,24 @@ import java.security.MessageDigest
 @SuppressLint("ComposableNaming", "PrivateResource")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun signupScreen(context: Context, navController: NavHostController, db: UserDao) {
+fun signupScreen(
+    context: Context,
+    navController: NavHostController,
+    db: UserDao,
+    userViewModel: UserViewModel = viewModel (),
+    exitToApp:(Boolean)->Unit
+) {
 
     val paddingUp: Modifier = Modifier.padding(bottom = 8.dp)
     val paddingDown: Modifier = Modifier.padding(bottom = 16.dp)
-
-
-    var username by remember { mutableStateOf("") }
     var strength by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var isButtonEnabled by remember { mutableStateOf(true) }
-    var showError by remember { mutableStateOf(true) }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisibility by remember {
-        mutableStateOf(false)
-    }
     val mainTransport = MainTransport()
     val mainActivity = MainActivity()
-    val onBack = { toastToText(context,"Tekan tombol 'Back' sekali lagi untuk menutup aplikasi") }
 
-    mainActivity.BackPressHandler(onBackPressed = onBack)
+    mainActivity.BackPressHandler(){
+        exitToApp(it)
+    }
 
     Box(
         modifier = Modifier
@@ -97,25 +97,25 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
 
             Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
             CoolTextField(
-                value = username,
-                onValueChange = { newUsername -> username = newUsername },
+                value = userViewModel.username,
+                onValueChange = { newUsername -> userViewModel.username = newUsername },
                 placeholder = "Your Name",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
             CoolTextField(
-                value = email,
-                onValueChange = { newEmail -> email = newEmail
-                    showError = !isEmailValid(newEmail)
+                value = userViewModel.email,
+                onValueChange = { newEmail -> userViewModel.email = newEmail
+                    userViewModel.showError = !userViewModel.isEmailValid(newEmail)
                 },
-                isError = showError,
+                isError = userViewModel.showError,
                 placeholder = "Your Email",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor(),
                 trailingIcon = {
-                    if (showError) {
+                    if (userViewModel.showError) {
                         iconOutlinedTextField(Color.Red)
-                    }else if(db.getUserByEmail(email)){
+                    }else if(db.getUserByEmail(userViewModel.email)){
                         iconOutlinedTextField(Color.Red)
                     }
                     else{
@@ -125,36 +125,32 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
 
             )
             CoolTextField(
-                value = password,
-                onValueChange = { newPassword ->
-                    password = newPassword
-                    val passwordStrength = checkPasswordStrength(newPassword)
-                    // Lakukan tindakan berdasarkan kekuatan password
-                    // Misalnya, tampilkan pesan kekuatan password di bawah TextField
-                    when (passwordStrength) {
+                value = userViewModel.password,
+                onValueChange = { newPassword -> userViewModel.password = newPassword
+                    strength = when (checkPasswordStrength(newPassword)) {
                         PasswordStrength.WEAK -> {
-                            strength = "w"
+                            "w"
                         }
+
                         PasswordStrength.MEDIUM -> {
-                            strength = "m"
+                            "m"
                         }
+
                         PasswordStrength.STRONG -> {
-                            strength = "s"
+                            "s"
                         }
                     }
                 },
-                placeholder = "Your password",
-                modifier = paddingUp,
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                placeholder ="Enter your password",
+                modifier = paddingDown,
+                visualTransformation = userViewModel.passwordVisibility(userViewModel.passwordVisibility),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(
-                        onClick = { passwordVisibility = !passwordVisibility }
+                        onClick = { userViewModel.passwordVisibility = !userViewModel.passwordVisibility }
                     ) {
                         Icon(
-                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
-                                com.google.android.material.R.drawable.design_ic_visibility
-                            ),
+                            painter = userViewModel.passwordVisibilityIcon(userViewModel.passwordVisibility),
                             contentDescription = "Toggle Password Visibility",
                             tint = Color.White
                         )
@@ -175,23 +171,25 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
             }
 
             CoolTextField(
-                value = confirmPassword,
-                onValueChange = { newPassword -> confirmPassword = newPassword },
+                value = userViewModel.rePassword,
+                onValueChange = { newPassword -> userViewModel.rePassword = newPassword },
                 placeholder ="Renter your password",
                 modifier = paddingDown,
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = userViewModel.passwordVisibility(userViewModel.passwordVisibility),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(
-                        onClick = { passwordVisibility = !passwordVisibility }
+                        onClick = { userViewModel.passwordVisibility = !userViewModel.passwordVisibility }
                     ) {
-                        Icon(
-                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
-                                com.google.android.material.R.drawable.design_ic_visibility
-                            ),
-                            contentDescription = "Toggle Password Visibility",
-                            tint = Color.White
-                        )
+                        IconButton(
+                            onClick = { userViewModel.passwordVisibility = !userViewModel.passwordVisibility }
+                        ) {
+                            Icon(
+                                painter = userViewModel.passwordVisibilityIcon(userViewModel.passwordVisibility),
+                                contentDescription = "Toggle Password Visibility",
+                                tint = Color.White
+                            )
+                        }
                     }
                 },
                 colors = mainActivity.defaultTextFieldColor()
@@ -199,29 +197,29 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
             Button(
                 enabled = isButtonEnabled,
                 onClick = {
-                    if (username.isEmpty()) {
+                    if (userViewModel.username.isEmpty()) {
                         toastToText(context, "Please enter your username")
-                    }else if (email.isEmpty()) {
+                    }else if (userViewModel.email.isEmpty()) {
                         toastToText(context, "Please enter your email")
                     }
-                    else if (password.isEmpty()) {
+                    else if (userViewModel.password.isEmpty()) {
                         toastToText(context, "Please enter your password")
-                    } else if (confirmPassword.isEmpty()) {
+                    } else if (userViewModel.rePassword.isEmpty()) {
                         toastToText(context, "Please confirm your password")
-                    } else if (password != confirmPassword) {
+                    } else if (userViewModel.password != userViewModel.rePassword) {
                         toastToText(context, "Passwords do not match")
-                    } else if(db.getUserByEmail(email)){
-                        showError = true
+                    } else if(db.getUserByEmail(userViewModel.email)){
+                        userViewModel.showError = true
                         toastToText(context, "Email already register")
                     }
                     else {
-                        val encryptedPassword = encryptMD5(password)
+                        val encryptedPassword = encryptMD5(userViewModel.password)
                         if(strength != "w"){
                             isButtonEnabled = false
                             mainTransport.updateUserSignUp(
-                                username,
+                                userViewModel.username,
                                 encryptedPassword,
-                                email,
+                                userViewModel.email,
                                 context,
                                 object : IonMaster.IonCallback {
                                     override fun onReadyCallback(
@@ -242,11 +240,7 @@ fun signupScreen(context: Context, navController: NavHostController, db: UserDao
                         }else{
                             toastToText(context,"Password anda terlalu lemah")
                         }
-
-
                     }
-
-
                 },
                 modifier = Modifier.padding(16.dp),
                 colors = mainActivity.defaultButtonColor()

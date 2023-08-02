@@ -1,6 +1,7 @@
 package com.example.havefunapp.model
 
 data class Movies(
+    val id: Int,
     val title: String,
     val score: String,
     val release_date: String,

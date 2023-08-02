@@ -2,7 +2,16 @@ package com.example.havefunapp.util
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 
 class Util {
 
@@ -23,6 +32,12 @@ class Util {
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetworkInfo = connectivityManager.activeNetworkInfo
             return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting
+        }
+
+        fun exitToApp(
+            exitApp:(Boolean)-> Unit
+        ){
+
         }
 
         fun getBaseUrl(

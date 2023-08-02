@@ -26,7 +26,7 @@ class MainTransport : IonMaster() {
 //            return returnObj
 //        }
 
-        fun getPupularFilm(context: Context?,type: String, page: Int, query: String?, callback: IonCallback?): java.util.concurrent.Future<JsonObject>? {
+        fun getData(context: Context?, type: String, page: Int, query: String?, callback: IonCallback?): java.util.concurrent.Future<JsonObject>? {
 
             val returnObj: Future<JsonObject> = Ion.with(context)
                 .load(Util.getFilm(type,page,query))

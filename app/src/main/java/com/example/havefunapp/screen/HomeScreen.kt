@@ -109,13 +109,15 @@ fun HomeScreen(
     stringButton: List<String>,
     dataDefault: MutableList<Movies>,
     topRatedData: MutableList<Movies>,
-    navController: NavHostController
+    navController: NavHostController,
+    upComingData: MutableList<Movies>
 ){
     var searchTexts by remember { mutableStateOf("") }
     val mainActivity = MainActivity()
     val mainTransport = MainTransport()
     var popular : MutableList<Movies> = dataDefault
     var topRated : MutableList<Movies> = mutableListOf()
+    var upComing : MutableList<Movies> = mutableListOf()
     var loadDataSearch by remember { mutableStateOf(false) }
 
 
@@ -195,13 +197,20 @@ fun HomeScreen(
         }else{
             setData(topRated,colorListLight,colorListMedium,colorListDark,featureSection)
         }
+    }else if (onChipIndex == 2) {
+        upComing = upComingData
+        if (lastItemVisible){
+            setData(upComing,colorListLight,colorListMedium,colorListDark,featureSection)
+        }else{
+            setData(upComing,colorListLight,colorListMedium,colorListDark,featureSection)
+        }
     }
 
 
 
 
 
-    mainActivity.BackPressHandler(onBackPressed = onBack)
+//    mainActivity.BackPressHandler(onBackPressed = onBack)
     Box(
         modifier = Modifier
             .background(DeepBlue)
@@ -247,6 +256,13 @@ fun HomeScreen(
                 }
             }else if(onChipIndex ==1){
                 mainActivity.getDataApi(Util.topRated,page++,null,mainTransport,context,"Halaman 2 ",topRated,
+                    onSuccess = {bool->
+                        loadingGetAPI = bool
+                    }){
+
+                }
+            }else if(onChipIndex ==2){
+                mainActivity.getDataApi(Util.topRated,page++,null,mainTransport,context,"Halaman 2 ",upComing,
                     onSuccess = {bool->
                         loadingGetAPI = bool
                     }){

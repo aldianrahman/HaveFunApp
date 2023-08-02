@@ -3,7 +3,12 @@ package com.example.havefunapp.screen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +48,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.havefunapp.MainActivity
 import com.example.havefunapp.R
@@ -51,6 +58,7 @@ import com.example.havefunapp.ui.theme.TextWhite
 import com.example.havefunapp.ui.theme.primaryColor
 import com.example.havefunapp.util.ScreenRoute
 import com.example.havefunapp.util.Util
+import com.example.havefunapp.viewModel.UserViewModel
 
 @SuppressLint("PrivateResource", "ComposableNaming")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +67,9 @@ fun loginScreen(
     context: Context,
     editor: SharedPreferences.Editor,
     db: UserDao,
-    navController: NavHostController
+    navController: NavHostController,
+    userViewModel: UserViewModel = viewModel (),
+    exitToApp:(Boolean)-> Unit
 ) {
 
     val paddingUp: Modifier = Modifier.padding(bottom = 8.dp)
@@ -75,17 +85,14 @@ fun loginScreen(
         mutableStateOf(false)
     }
     val mainActivity= MainActivity()
-    val onBack = {
-        Util.toastToText(
-            context,
-            "Tekan tombol 'Back' sekali lagi untuk menutup aplikasi"
-        )
-    }
+
     var rememberMe by remember { mutableStateOf(false) }
 
 
 
-    mainActivity.BackPressHandler(onBackPressed = onBack)
+    mainActivity.BackPressHandler {
+        exitToApp(it)
+    }
 
     Box(
         modifier = Modifier
@@ -105,27 +112,26 @@ fun loginScreen(
 
             Text(Util.appName, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 16.dp))
             CoolTextField(
-                value = email,
-                onValueChange = { newUser -> email = newUser },
+                value = userViewModel.email,
+                onValueChange = { newUser -> userViewModel.email = newUser },
                 placeholder = "Your Email",
                 modifier = paddingUp,
                 colors = mainActivity.defaultTextFieldColor()
             )
             CoolTextField(
-                value = password,
-                onValueChange = { newPassword -> password = newPassword },
+                value = userViewModel.password,
+                onValueChange = { newPassword -> userViewModel.password = newPassword },
                 placeholder = "Your password",
                 modifier = paddingDown,
                 colors = mainActivity.defaultTextFieldColor(),
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = userViewModel.passwordVisibility(userViewModel.passwordVisibility),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(
-                        onClick = { passwordVisibility = !passwordVisibility }
+                        onClick = { userViewModel.passwordVisibility = !userViewModel.passwordVisibility }
                     ) {
                         Icon(
-                            painter = if (passwordVisibility) painterResource(com.google.android.material.R.drawable.design_ic_visibility_off) else painterResource(
-                                com.google.android.material.R.drawable.design_ic_visibility),
+                            painter = userViewModel.passwordVisibilityIcon(userViewModel.passwordVisibility),
                             contentDescription = "Toggle Password Visibility",
                             tint = TextWhite
                         )
@@ -137,8 +143,8 @@ fun loginScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = rememberMe,
-                    onCheckedChange = { rememberMe = it },
+                    checked = userViewModel.rememberMe,
+                    onCheckedChange = { userViewModel.rememberMe = it },
                     colors = CheckboxDefaults.colors(
                         checkmarkColor = TextWhite,
                         checkedColor = DeepBlue,
@@ -151,21 +157,21 @@ fun loginScreen(
             Button(
                 onClick = {
 
-                    val encryptedPassword = encryptMD5(password)
+                    val encryptedPassword = encryptMD5(userViewModel.password)
 
-                    val checkLogin = db.getUserByUsernameAndPassword(email,encryptedPassword)
+                    val checkLogin = db.getUserByUsernameAndPassword(userViewModel.email,encryptedPassword)
                     Log.i("DB_LOGIN", "loginScreen: $checkLogin")
 
-                    if(email == ""){
+                    if(userViewModel.email == ""){
                         Util.toastToText(context,"Masukan User Anda")
-                    }else if (password == ""){
+                    }else if (userViewModel.password == ""){
                         Util.toastToText(context, "Masukan Password Anda")
                     }else if(checkLogin) {
 
-                        editor.putBoolean(Util.RememberME,rememberMe) // di benerin getFilm nya baru sesuaikan lagi false nya
-                        editor.putString(Util.idlUser,db.getUserIdByEmail(email))
-                        editor.putString(Util.emailUser,email)
-                        editor.putString(Util.nameUser,db.getUsernameByEmail(email))
+                        editor.putBoolean(Util.RememberME,userViewModel.rememberMe) // di benerin getFilm nya baru sesuaikan lagi false nya
+                        editor.putString(Util.idlUser,db.getUserIdByEmail(userViewModel.email))
+                        editor.putString(Util.emailUser,userViewModel.email)
+                        editor.putString(Util.nameUser,db.getUsernameByEmail(userViewModel.email))
                         editor.apply()
                         val result = editor.commit()
 

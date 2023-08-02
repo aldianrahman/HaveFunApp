@@ -30,7 +30,11 @@ import com.example.havefunapp.util.Util
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(context: Context, navigateToNextScreen: () -> Unit) {
+fun SplashScreen(
+    context: Context,
+    exitToApp :(Boolean)->Unit,
+    navigateToNextScreen: () -> Unit
+) {
 
     var expand by remember{
         mutableStateOf(false)
@@ -45,7 +49,9 @@ fun SplashScreen(context: Context, navigateToNextScreen: () -> Unit) {
 
     val mainActivity = MainActivity()
 
-    mainActivity.BackPressHandler(onBackPressed = onBack)
+    mainActivity.BackPressHandler {
+        exitToApp(it)
+    }
 
 
 

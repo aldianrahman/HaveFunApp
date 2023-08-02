@@ -66,7 +66,7 @@ fun CashFlowManager(){
     var showAlertButton by remember { mutableStateOf(false) }
 
 
-    mainActivity.BackPressHandler(onBackPressed = onBack)
+//    mainActivity.BackPressHandler(onBackPressed = onBack)
     Box(
         modifier = Modifier
             .background(DeepBlue)
