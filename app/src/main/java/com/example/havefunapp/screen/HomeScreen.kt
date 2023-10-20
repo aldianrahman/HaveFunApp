@@ -224,6 +224,7 @@ fun HomeScreen(
                 onChipIndex = selectIndex
             }
             CurrentMeditation(data,email,editor,navController)
+//            checkLogin(email,navController)
             FeatureSection(
                 onChipIndex,
                 stringButton,
@@ -297,6 +298,13 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun checkLogin(email: String, navController: NavHostController) {
+    if (email.isNullOrBlank() && email.isEmpty()){
+        navController.navigate(ScreenRoute.LoginScreen.route)
     }
 }
 
@@ -417,11 +425,12 @@ fun GreetingSection(
     greeting: String,
     wish: String,
     date: String,
+    context : Context = LocalContext.current,
     onSearchAPI:(String) -> Unit
 ){
     var searchClick by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
-    val context = LocalContext.current
+
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -688,6 +697,7 @@ fun CurrentMeditation(
                         onConfirmLogout = {
                             editor?.clear()
                             editor?.apply()
+                            editor?.commit()
                             navController?.navigate(ScreenRoute.SplashScreen.route)
                         },
                         onDismissRequest = {

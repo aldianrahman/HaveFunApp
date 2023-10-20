@@ -8,10 +8,7 @@ import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.ButtonColors
@@ -20,10 +17,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.havefunapp.model.ButtonTop
 import com.example.havefunapp.model.Movies
+import com.example.havefunapp.model.HeadlineData
 import com.example.havefunapp.screen.HomeScreen
-import com.example.havefunapp.screen.MobileMovieScreen
+import com.example.havefunapp.screen.NewsScreen
 import com.example.havefunapp.screen.SecondScreen
 
 
@@ -142,7 +139,7 @@ class MainActivity : ComponentActivity() {
                     "May", "June", "July", "August",
                     "September", "October", "November", "December"
                 )
-                val month = calendar.get(Calendar.MONTH) + 1 // Note: Months start from 0
+                val month = calendar.get(Calendar.MONTH)// Note: Months start from 0
                 val year = calendar.get(Calendar.YEAR)
                 val hour = calendar.get(Calendar.HOUR_OF_DAY)
                 var inDay = ""
@@ -165,6 +162,23 @@ class MainActivity : ComponentActivity() {
 
                 var toGo = ""
 
+                val buttonTop = listOf<ButtonTop>(
+                    ButtonTop("Headline","Headline",true),
+                    ButtonTop("Business","Business"),
+                    ButtonTop("Entertainment","Entertainment"),
+                    ButtonTop("Health","Health"),
+                    ButtonTop("Science","Science"),
+                    ButtonTop("Sport","Sport"),
+                    ButtonTop("Technology","Technology"),
+                )
+
+                val newsData = List(20){ index ->
+                    HeadlineData(
+                        "Kotlin Jetpack Compose $index",
+                        "Detail news for Kotlin Jetpack Compose $index"
+                    )
+                }
+
 
 
 
@@ -180,13 +194,20 @@ class MainActivity : ComponentActivity() {
                             if (it)finish()
                         }) {
 
-                            toGo = if (isLogin){
-                                ScreenRoute.HomeScreen.route
-                            }else{
-                                ScreenRoute.SignupScreen.route
-                            }
+//                            toGo = if (isLogin){
+//                                ScreenRoute.HomeScreen.route
+//                            }else{
+//                                ScreenRoute.SignupScreen.route
+//                            }
+//
+//                            navController.navigate(toGo)
+                            Toast.makeText(context, ""+isLogin, Toast.LENGTH_SHORT).show()
 
-                            navController.navigate(toGo)
+                            if(isLogin){
+                                navController.navigate(ScreenRoute.HomeScreen.route)
+                            }else{
+                                navController.navigate(ScreenRoute.LoginScreen.route)
+                            }
 
                         }
                     }
@@ -206,9 +227,10 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(ScreenRoute.CashFlowManager.route){
-                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData,editor,navController){
-                            if (it)finish()
-                        }
+//                        MobileMovieScreen(popularData,topRatedData,upComingData,nowPlayingData,editor,navController){
+//                            if (it)finish()
+//                        }
+//                        NewsScreen(buttonTop,newsData)
                     }
 
                     composable(ScreenRoute.HomeScreen.route){
@@ -240,6 +262,7 @@ class MainActivity : ComponentActivity() {
                                     navController,
                                     upComingData
                                 )
+//                                NewsScreen(buttonTop,newsData)
                             }
                         }
                     }

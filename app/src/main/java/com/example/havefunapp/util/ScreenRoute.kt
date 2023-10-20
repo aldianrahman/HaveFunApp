@@ -9,6 +9,7 @@ sealed class ScreenRoute(
     object HomeScreen: ScreenRoute("home")
     object SecondScreen: ScreenRoute("home")
     object CashFlowManager: ScreenRoute("cfm")
+    object NewsScreen: ScreenRoute("news_screen")
 
     fun withArgs(vararg args: String):String{
         return buildString {

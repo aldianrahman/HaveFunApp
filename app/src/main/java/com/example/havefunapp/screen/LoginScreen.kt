@@ -178,7 +178,7 @@ fun loginScreen(
 
                         if (result) {
                             Util.toastToText(context,"Login Berhasil")
-                            navController.navigate(ScreenRoute.CashFlowManager.route)
+                            navController.navigate(ScreenRoute.HomeScreen.route)
                         } else {
                             Util.toastToText(context, "Gagal menerapkan perubahan")
                         }
